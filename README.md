@@ -1,6 +1,8 @@
 # ImgDecode
 
-**TODO: Add description**
+A ting library for image decoding task.
+
+Currently using [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) as the backend.
 
 ## Installation
 
@@ -10,7 +12,7 @@ by adding `img_decode` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:img_decode, "~> 0.1.0"}
+    {:img_decode, "~> 0.1.0", github: "cocoa-xu/img_decode"}
   ]
 end
 ```

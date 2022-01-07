@@ -21,8 +21,8 @@ static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char * data, int x, int y
                                      enif_make_atom(env, "ok"),
                                      enif_make_binary(env, &result),
                                      enif_make_tuple3(env,
-                                                       enif_make_int(env, x),
                                                        enif_make_int(env, y),
+                                                       enif_make_int(env, x),
                                                        enif_make_int(env, n)
                                      ),
                                      enif_make_atom(env, type)

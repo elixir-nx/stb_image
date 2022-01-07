@@ -24,8 +24,11 @@ jobs:
           brew install erlang elixir libomp
           mix local.hex --force
           mix local.rebar --force
-      - name: Get Elixir Dependencies
-        run: mix deps.get
+
+      - name: Get Dependencies
+        run: |
+          mix deps.get
+          git submodule update --init --recursive
 
       - name: Compile Elixir Dependencies
         run: mix deps.compile

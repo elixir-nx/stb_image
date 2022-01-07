@@ -27,8 +27,10 @@ jobs:
       - name: Install system dependecies
         run: sudo apt-get update && sudo apt-get install -y build-essential automake autoconf pkg-config bc m4 curl git libssl-dev libncurses5-dev erlang-runtime-tools erlang-ssl erlang-dev ca-certificates
 
-      - name: Get Elixir Dependencies
-        run: mix deps.get
+      - name: Get Dependencies
+        run: |
+          mix deps.get
+          git submodule update --init --recursive
 
       - name: Compile Elixir Dependencies
         run: mix deps.compile

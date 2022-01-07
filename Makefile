@@ -16,6 +16,7 @@ endif
 build: $(IMG_DECODE_SO)
 
 $(IMG_DECODE_SO):
+	@ git submodule update --init --recursive
 	@ mkdir -p $(PRIV_DIR)
 	@ mkdir -p $(CMAKE_IMG_DECODE_BUILD_DIR)
 	@ cd "$(CMAKE_IMG_DECODE_BUILD_DIR)" && \

@@ -26,9 +26,7 @@ jobs:
           mix local.rebar --force
 
       - name: Get Dependencies
-        run: |
-          mix deps.get
-          git submodule update --init --recursive
+        run: mix deps.get
 
       - name: Compile Elixir Dependencies
         run: mix deps.compile

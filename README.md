@@ -1,8 +1,13 @@
 # ImgDecode
 
-A ting library for image decoding task.
+A ting Elixir library for image decoding task.
 
 Currently using [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) as the backend.
+
+| OS               | Build Status |
+|------------------|--------------|
+| Ubuntu 20.04     | [![CI](https://github.com/cocoa-xu/img_decode/actions/workflows/linux.yml/badge.svg)](https://github.com/cocoa-xu/img_decode/actions/workflows/linux.yml) |
+| macOS 11         | [![CI](https://github.com/cocoa-xu/img_decode/actions/workflows/macos.yml/badge.svg)](https://github.com/cocoa-xu/img_decode/actions/workflows/macos.yml) |
 
 ## Installation
 

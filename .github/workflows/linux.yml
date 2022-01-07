@@ -1,0 +1,40 @@
+name: linux
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/README.md'
+      - '.github/workflows/macos*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    env:
+      MIX_ENV: test
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 24.1.5
+          elixir-version: 1.12.3
+
+      - name: Install system dependecies
+        run: sudo apt-get update && sudo apt-get install -y build-essential automake autoconf pkg-config bc m4 curl git libssl-dev libncurses5-dev erlang-runtime-tools erlang-ssl erlang-dev ca-certificates
+
+      - name: Get Elixir Dependencies
+        run: mix deps.get
+
+      - name: Compile Elixir Dependencies
+        run: mix deps.compile
+
+      - name: Compile
+        run: mix compile
+
+      - name: Test
+        run: mix test

@@ -1,6 +1,6 @@
 # ImgDecode
 
-A ting Elixir library for image decoding task.
+A tiny Elixir library for image decoding task.
 
 Currently using [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) as the backend.
 

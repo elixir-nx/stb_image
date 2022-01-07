@@ -22,7 +22,7 @@ defmodule ImgDecode.MixProject do
   end
 
   defp description() do
-    "A ting Elixir library for image decoding task."
+    "A tiny Elixir library for image decoding task."
   end
 
   defp deps do

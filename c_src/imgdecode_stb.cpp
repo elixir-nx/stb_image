@@ -11,10 +11,10 @@
 #  pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
-static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char * data, int x, int y, int n, int bytes_per_pixel, const char * type) {
+static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char * data, int x, int y, int n, int bytes_per_channel, const char * type) {
     if (data != nullptr) {
         ErlNifBinary result;
-        if (enif_alloc_binary(x * y * n * bytes_per_pixel, &result)) {
+        if (enif_alloc_binary(x * y * n * bytes_per_channel, &result)) {
             memcpy(result.data, data, result.size);
 
             return enif_make_tuple4(env,
@@ -52,25 +52,25 @@ static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         erlang::nif::get(env, argv[1], &desired_channels) &&
         erlang::nif::get_atom(env, argv[2], type)) {
 
-        int bytes_per_pixel;
+        int bytes_per_channel;
         unsigned char* (*load_func)(const char *, int *, int *, int *, int) = nullptr;
         if (type == "u8") {
             load_func = (decltype(load_func))stbi_load;
-            bytes_per_pixel = sizeof(unsigned char);
+            bytes_per_channel = sizeof(unsigned char);
         }
         else if (type == "u16") {
             load_func = (decltype(load_func))stbi_load_16;
-            bytes_per_pixel = sizeof(unsigned short);
+            bytes_per_channel = sizeof(unsigned short);
         }
         else if (type == "f32") {
             load_func = (decltype(load_func))stbi_loadf;
-            bytes_per_pixel = sizeof(float);
+            bytes_per_channel = sizeof(float);
         }
         else return enif_make_badarg(env);
 
         int x, y, n;
         unsigned char *data = load_func(filename.c_str(), &x, &y, &n, desired_channels);
-        ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_pixel, type.c_str());
+        ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel, type.c_str());
         free((void *)data);
         return ret;
     } else {
@@ -89,25 +89,25 @@ static ERL_NIF_TERM from_memory(ErlNifEnv *env, int argc, const ERL_NIF_TERM arg
         erlang::nif::get(env, argv[1], &desired_channels) &&
         erlang::nif::get_atom(env, argv[2], type)) {
 
-        int bytes_per_pixel;
+        int bytes_per_channel;
         unsigned char* (*load_func)(void *, int, int *, int *, int *, int) = nullptr;
         if (type == "u8") {
             load_func = (decltype(load_func))stbi_load_from_memory;
-            bytes_per_pixel = sizeof(unsigned char);
+            bytes_per_channel = sizeof(unsigned char);
         }
         else if (type == "u16") {
             load_func = (decltype(load_func))stbi_load_16_from_memory;
-            bytes_per_pixel = sizeof(unsigned short);
+            bytes_per_channel = sizeof(unsigned short);
         }
         else if (type == "f32") {
             load_func = (decltype(load_func))stbi_loadf_from_memory;
-            bytes_per_pixel = sizeof(float);
+            bytes_per_channel = sizeof(float);
         }
         else return enif_make_badarg(env);
 
         int x, y, n;
         unsigned char *data = load_func(result.data, (int)result.size, &x, &y, &n, desired_channels);
-        ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_pixel, type.c_str());
+        ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel, type.c_str());
         free((void *)data);
         return ret;
     } else {

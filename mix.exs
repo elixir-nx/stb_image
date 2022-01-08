@@ -35,7 +35,7 @@ defmodule ImgDecode.MixProject do
   defp package() do
     [
       name: "img_decode",
-      files: ~w(c_src lib .formatter.exs mix.exs README* LICENSE* Makefile CMakeLists.txt),
+      files: ~w(c_src lib .formatter.exs mix.exs README* LICENSE* Makefile),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => "https://github.com/cocoa-xu/img_decode"}
     ]

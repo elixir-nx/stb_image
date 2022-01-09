@@ -28,3 +28,5 @@ img_decode-*.tar
 .idea/
 .vscode/
 
+image_rs/priv/
+

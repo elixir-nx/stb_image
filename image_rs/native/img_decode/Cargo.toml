@@ -1,0 +1,14 @@
+[package]
+name = "img_decode"
+version = "0.1.0"
+authors = []
+edition = "2018"
+
+[lib]
+name = "img_decode"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+rustler = "0.23.0"
+image = "0"

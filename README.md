@@ -2,7 +2,10 @@
 
 A tiny Elixir library for image decoding task.
 
-Currently using [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) as the backend.
+Currently available backends
+
+- [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h).
+- [image_rs](https://github.com/image-rs/image).
 
 | OS               | Build Status |
 |------------------|--------------|
@@ -14,19 +17,20 @@ Currently using [stb_image](https://github.com/nothings/stb/blob/master/stb_imag
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 by adding `img_decode` to your list of dependencies in `mix.exs`:
 
+Use `stb_image` as backend
 ```elixir
 def deps do
   [
-    {:img_decode, "~> 0.1.0"}
+    {:img_decode, "~> 0.1.0", github: "cocoa-xu/img_decode", sparse: "stb_image"}
   ]
 end
 ```
 
-Or use HEAD on GitHub
+Or use `image_rs` as backend
 ```elixir
 def deps do
   [
-    {:img_decode, "~> 0.1.0", github: "cocoa-xu/img_decode"}
+    {:img_decode, "~> 0.1.0", github: "cocoa-xu/img_decode", sparse: "image_rs"}
   ]
 end
 ```

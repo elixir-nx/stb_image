@@ -16,6 +16,12 @@ jobs:
     env:
       MIX_ENV: test
 
+    strategy:
+      matrix:
+        backend:
+          - stb_image
+          - image_rs
+
     steps:
       - uses: actions/checkout@v2
 
@@ -25,14 +31,17 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Get Dependencies
-        run: mix deps.get
+      - name: Install Rust
+        if: ${{ matrix.backend == "image_rs" }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
 
-      - name: Compile Elixir Dependencies
-        run: mix deps.compile
-
-      - name: Compile
-        run: mix compile
-
-      - name: Test
-        run: mix test
+      - name: Compile and Test
+        run: |
+          cd ${{ matrix.backend }}
+          mix deps.get
+          mix deps.compile
+          mix compile
+          mix test

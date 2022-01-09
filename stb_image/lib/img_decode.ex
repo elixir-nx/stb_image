@@ -48,7 +48,9 @@ defmodule ImgDecode do
   {h, w, c} = shape
   ```
   """
-  def from_file(filename, desired_channels, type) when is_binary(filename) and desired_channels >= 0 and (type == :u8 or type == :u16 or type == :f32) do
+  def from_file(filename, desired_channels, type)
+      when is_binary(filename) and desired_channels >= 0 and
+             (type == :u8 or type == :u16 or type == :f32) do
     ImgDecode.Nif.from_file(filename, desired_channels, type)
   end
 
@@ -105,7 +107,9 @@ defmodule ImgDecode do
   {h, w, c} = shape
   ```
   """
-  def from_memory(buffer, desired_channels, type) when is_binary(buffer) and desired_channels >= 0 and (type == :u8 or type == :u16 or type == :f32) do
+  def from_memory(buffer, desired_channels, type)
+      when is_binary(buffer) and desired_channels >= 0 and
+             (type == :u8 or type == :u16 or type == :f32) do
     ImgDecode.Nif.from_memory(buffer, desired_channels, type)
   end
 end

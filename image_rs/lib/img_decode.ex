@@ -16,7 +16,9 @@ defmodule ImgDecode do
   """
   def from_file(filename) do
     case ImgDecode.Nif.from_file(filename) do
-      {:error, reason} -> {:error, reason}
+      {:error, reason} ->
+        {:error, reason}
+
       {:ok, result} ->
         {img, shape, type, channels} = result
         {:ok, IO.iodata_to_binary(img), shape, String.to_atom(type), String.to_atom(channels)}
@@ -39,7 +41,9 @@ defmodule ImgDecode do
   """
   def from_memory(buffer) do
     case ImgDecode.Nif.from_memory(buffer) do
-      {:error, reason} -> {:error, reason}
+      {:error, reason} ->
+        {:error, reason}
+
       {:ok, result} ->
         {img, shape, type, channels} = result
         {:ok, IO.iodata_to_binary(img), shape, String.to_atom(type), String.to_atom(channels)}

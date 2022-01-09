@@ -32,7 +32,7 @@ jobs:
           mix local.rebar --force
 
       - name: Install Rust
-        if: ${{ matrix.backend == "image_rs" }}
+        if: ${{ matrix.backend == 'image_rs' }}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable

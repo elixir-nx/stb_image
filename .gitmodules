@@ -1,3 +1,3 @@
-[submodule "3rd_party/stb"]
-	path = 3rd_party/stb
+[submodule "stb_image/3rd_party/stb"]
+	path = stb_image/3rd_party/stb
 	url = https://github.com/nothings/stb.git

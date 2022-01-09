@@ -7,6 +7,7 @@ defmodule ImgDecode.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
+      compilers: [:elixir_make] ++ Mix.compilers(),
       description: description(),
       package: package(),
       deps: deps(),
@@ -26,7 +27,7 @@ defmodule ImgDecode.MixProject do
 
   defp deps do
     [
-      {:rustler, "~> 0.23.0"},
+      {:elixir_make, "~> 0.6"},
       {:ex_doc, "~> 0.23", only: :dev, runtime: false}
     ]
   end

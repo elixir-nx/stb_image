@@ -16,12 +16,12 @@ static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char * data, int x, int y
         ErlNifBinary result;
         if (enif_alloc_binary(x * y * n * bytes_per_channel, &result)) {
             memcpy(result.data, data, result.size);
-            const char ** channel_types = {"l", "la", "rgb", "rgba"};
+            const char * channel_types[] = {"l", "la", "rgb", "rgba"};
             const char * channels = "unknown";
             if (n >= 1 && n <= 4) {
                 channels = channel_types[n - 1];
             }
-            return enif_make_tuple4(env,
+            return enif_make_tuple5(env,
                                      enif_make_atom(env, "ok"),
                                      enif_make_binary(env, &result),
                                      enif_make_tuple3(env,

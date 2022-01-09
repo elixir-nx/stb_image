@@ -17,7 +17,10 @@ Currently available backends
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 by adding `img_decode` to your list of dependencies in `mix.exs`:
 
-Use `stb_image` as backend. Lightweight, good enough for most common image formats (please see [stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h) for details).
+Use `stb_image` as backend. 
+
+Lightweight (~9 MB for `:prod`, on macOS), good enough for most common image formats (please see [stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h) for details).
+
 ```elixir
 def deps do
   [
@@ -26,7 +29,10 @@ def deps do
 end
 ```
 
-Or use `image_rs` as backend. Larger footprint, but supports more image formats (please see [image_rs/README.md](https://github.com/image-rs/image) to find out supported file formats).
+Or use `image_rs` as backend. 
+
+Slightly larger footprint (~11 MB for `:prod`, on macOS. You can safely delete `_build/prod/lib/img_decode/native`), but supports more image formats (please see [image_rs/README.md](https://github.com/image-rs/image) to find out supported file formats).
+
 ```elixir
 def deps do
   [

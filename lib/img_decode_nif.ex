@@ -1,4 +1,4 @@
-defmodule ImgDecode.Nif do
+defmodule ImgDecode.StbImage do
   @moduledoc false
 
   @on_load :load_nif

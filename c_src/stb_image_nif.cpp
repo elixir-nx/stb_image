@@ -140,7 +140,7 @@ static ErlNifFunc nif_functions[] = {
     {"from_memory", 3, from_memory, ERL_NIF_DIRTY_JOB_CPU_BOUND},
 };
 
-ERL_NIF_INIT(Elixir.ImgDecode.Nif, nif_functions, on_load, on_reload, on_upgrade, NULL);
+ERL_NIF_INIT(Elixir.StbImage.Nif, nif_functions, on_load, on_reload, on_upgrade, NULL);
 
 #if defined(__GNUC__)
 #pragma GCC visibility push(default)

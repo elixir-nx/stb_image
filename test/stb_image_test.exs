@@ -1,9 +1,9 @@
 defmodule ImgDecodeTest do
   use ExUnit.Case
-  doctest ImgDecode
+  doctest StbImage
 
   test "decode png from file" do
-    {:ok, img, shape, type, channels} = ImgDecode.from_file(Path.join(__DIR__, "test.png"))
+    {:ok, img, shape, type, channels} = StbImage.from_file(Path.join(__DIR__, "test.png"))
     assert type == :u8
     assert shape == {2, 3, 4}
     assert channels == :rgba
@@ -14,7 +14,7 @@ defmodule ImgDecodeTest do
   end
 
   test "decode jpg from file" do
-    {:ok, img, shape, type, channels} = ImgDecode.from_file(Path.join(__DIR__, "test.jpg"))
+    {:ok, img, shape, type, channels} = StbImage.from_file(Path.join(__DIR__, "test.jpg"))
     assert type == :u8
     assert shape == {2, 3, 3}
     assert channels == :rgb
@@ -26,7 +26,7 @@ defmodule ImgDecodeTest do
 
   test "decode png from memory" do
     {:ok, buffer} = File.read(Path.join(__DIR__, "test.png"))
-    {:ok, img, shape, type, channels} = ImgDecode.from_memory(buffer)
+    {:ok, img, shape, type, channels} = StbImage.from_memory(buffer)
     assert type == :u8
     assert shape == {2, 3, 4}
     assert channels == :rgba
@@ -38,7 +38,7 @@ defmodule ImgDecodeTest do
 
   test "decode jpg from memory" do
     {:ok, buffer} = File.read(Path.join(__DIR__, "test.jpg"))
-    {:ok, img, shape, type, channels} = ImgDecode.from_memory(buffer)
+    {:ok, img, shape, type, channels} = StbImage.from_memory(buffer)
     assert type == :u8
     assert shape == {2, 3, 3}
     assert channels == :rgb

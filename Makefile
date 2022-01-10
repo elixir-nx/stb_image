@@ -1,5 +1,5 @@
 PRIV_DIR = $(MIX_APP_PATH)/priv
-IMG_DECODE_STB_SO = $(PRIV_DIR)/img_decode_stb.so
+STB_IMAGE_NIF_SO = $(PRIV_DIR)/stb_image_nif.so
 
 C_SRC = $(shell pwd)/c_src
 LIB_SRC = $(shell pwd)/lib
@@ -15,9 +15,9 @@ endif
 
 .DEFAULT_GLOBAL := build
 
-build: $(IMG_DECODE_STB_SO)
+build: $(STB_IMAGE_NIF_SO)
 
-$(IMG_DECODE_STB_SO):
+$(STB_IMAGE_NIF_SO):
 	@ git submodule update --init --recursive
 	@ mkdir -p $(PRIV_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(C_SRC)/imgdecode_stb.cpp -o $(IMG_DECODE_STB_SO)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(C_SRC)/stb_image_nif.cpp -o $(STB_IMAGE_NIF_SO)

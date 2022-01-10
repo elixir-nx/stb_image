@@ -2,7 +2,7 @@
 
 A tiny Elixir library for image decoding task using [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) as the backend.
 
-There is an alternative version of this repo, img_decode, which uses [image_rs](https://github.com/image-rs/image) as the backend. 
+There is an alternative version of this repo, [img_decode_rs](https://github.com/cocoa-xu/img_decode_rs), which uses [image_rs](https://github.com/image-rs/image) as the backend. 
 That backend is implemented in Rust, so you will need a working Rust compiler. But the number of supported image formats are more than the `stb_image` backend.
 
 | OS               | Build Status |

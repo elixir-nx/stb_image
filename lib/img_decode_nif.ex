@@ -3,7 +3,7 @@ defmodule ImgDecode.Nif do
 
   @on_load :load_nif
   def load_nif do
-    nif_file = '#{:code.priv_dir(:img_decode)}/imgdecode'
+    nif_file = '#{:code.priv_dir(:img_decode)}/img_decode_stb'
 
     case :erlang.load_nif(nif_file, 0) do
       :ok -> :ok

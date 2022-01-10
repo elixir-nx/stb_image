@@ -1,11 +1,9 @@
 # ImgDecode
 
-A tiny Elixir library for image decoding task.
+A tiny Elixir library for image decoding task using [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) as the backend.
 
-Currently available backends
-
-- [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h).
-- [image_rs](https://github.com/image-rs/image).
+There is an alternative version of this repo, img_decode, which uses [image_rs](https://github.com/image-rs/image) as the backend. 
+That backend is implemented in Rust, so you will need a working Rust compiler. But the number of supported image formats are more than the `stb_image` backend.
 
 | OS               | Build Status |
 |------------------|--------------|
@@ -17,26 +15,10 @@ Currently available backends
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 by adding `img_decode` to your list of dependencies in `mix.exs`:
 
-Use `stb_image` as backend. 
-
-Lightweight (~9 MB for `:prod`, on macOS), good enough for most common image formats (please see [stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h) for details).
-
 ```elixir
 def deps do
   [
-    {:img_decode, "~> 0.1.0", github: "cocoa-xu/img_decode", sparse: "stb_image"}
-  ]
-end
-```
-
-Or use `image_rs` as backend. 
-
-Slightly larger footprint (~11 MB for `:prod`, on macOS. You can safely delete `_build/prod/lib/img_decode/native`), but supports more image formats (please see [image_rs/README.md](https://github.com/image-rs/image) to find out supported file formats).
-
-```elixir
-def deps do
-  [
-    {:img_decode, "~> 0.1.0", github: "cocoa-xu/img_decode", sparse: "image_rs"}
+    {:img_decode, "~> 0.1.0", github: "cocoa-xu/img_decode"}
   ]
 end
 ```

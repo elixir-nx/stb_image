@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - dev
     paths-ignore:
       - '**/README.md'
       - '.github/workflows/linux*'
@@ -16,31 +17,17 @@ jobs:
     env:
       MIX_ENV: test
 
-    strategy:
-      matrix:
-        backend:
-          - stb_image
-          - image_rs
-
     steps:
       - uses: actions/checkout@v2
 
       - name: Install Erlang and Elixir
         run: |
-          brew install erlang elixir libomp
+          brew install erlang elixir
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Install Rust
-        if: ${{ matrix.backend == 'image_rs' }}
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-
       - name: Compile and Test
         run: |
-          cd ${{ matrix.backend }}
           mix deps.get
           mix deps.compile
           mix compile

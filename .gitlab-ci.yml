@@ -14,6 +14,8 @@ build:
   script:
     - apt update -q -y
     - apt install -y cmake g++ build-essential git ca-certificates
+    - mix local.hex --force
+    - mix local.rebar --force
     - mix deps.get
     - mix test
 

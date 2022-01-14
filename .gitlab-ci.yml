@@ -1,0 +1,19 @@
+image: elixir:1.13
+build:
+  stage: build
+  variables:
+    MIX_ENV: test
+  only:
+    changes:
+      - c_src/**
+      - lib/**
+      - test/**
+      - *.exs
+      - mix.lock
+  script:
+    - apt update -q -y
+    - apt install -y cmake g++ build-essential git ca-certificates
+    - mix deps.get
+    - mix deps.compile
+    - mix test
+

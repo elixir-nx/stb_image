@@ -8,6 +8,7 @@ on:
       - dev
     paths-ignore:
       - '**/README.md'
+      - '.gitlab-ci.yml'
       - '.github/workflows/linux*'
   workflow_dispatch:
 

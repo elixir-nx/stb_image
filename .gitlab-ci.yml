@@ -14,6 +14,5 @@ build:
     - apt update -q -y
     - apt install -y cmake g++ build-essential git ca-certificates
     - mix deps.get
-    - mix deps.compile
     - mix test
 

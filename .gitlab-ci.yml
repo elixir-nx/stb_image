@@ -10,6 +10,7 @@ build:
       - test/**
       - '*.exs'
       - mix.lock
+      - .gitlab-ci.yml
   script:
     - apt update -q -y
     - apt install -y cmake g++ build-essential git ca-certificates

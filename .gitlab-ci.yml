@@ -8,7 +8,7 @@ build:
       - c_src/**
       - lib/**
       - test/**
-      - *.exs
+      - '*.exs'
       - mix.lock
   script:
     - apt update -q -y

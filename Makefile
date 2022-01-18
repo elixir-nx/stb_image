@@ -18,6 +18,5 @@ endif
 build: $(STB_IMAGE_NIF_SO)
 
 $(STB_IMAGE_NIF_SO):
-	@ git submodule update --init --recursive
 	@ mkdir -p $(PRIV_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(C_SRC)/stb_image_nif.cpp -o $(STB_IMAGE_NIF_SO)

@@ -36,7 +36,7 @@ defmodule ImgDecode.MixProject do
   defp package() do
     [
       name: "stb_image",
-      files: ~w(c_src lib .formatter.exs mix.exs README* LICENSE* Makefile 3rd_party/stb/stb_image.h),
+      files: ~w(c_src lib .formatter.exs mix.exs README* LICENSE* Makefile 3rd_party/stb),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @github_url}
     ]

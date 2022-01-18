@@ -5,7 +5,7 @@ defmodule ImgDecode.MixProject do
   def project do
     [
       app: :stb_image,
-      version: "0.1.1",
+      version: "0.1.2",
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       compilers: [:elixir_make] ++ Mix.compilers(),
@@ -36,7 +36,7 @@ defmodule ImgDecode.MixProject do
   defp package() do
     [
       name: "stb_image",
-      files: ~w(c_src lib .formatter.exs mix.exs README* LICENSE* Makefile),
+      files: ~w(c_src lib .formatter.exs mix.exs README* LICENSE* Makefile 3rd_party/stb/stb_image.h),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @github_url}
     ]

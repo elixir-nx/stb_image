@@ -120,6 +120,82 @@ static ERL_NIF_TERM from_memory(ErlNifEnv *env, int argc, const ERL_NIF_TERM arg
     }
 }
 
+static ERL_NIF_TERM gif_from_memory(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+    if (argc != 1) {
+        return erlang::nif::error(env, "expecting 1 argument: buffer");
+    }
+    ErlNifBinary result;
+    if (enif_inspect_binary(env, argv[0], &result)) {
+        int x, y, z, comp;
+        int * delays = nullptr;
+        unsigned char * data = nullptr;
+        // the parameter req_comp (the last one) seems to be not in use, see stb_image.h:6706
+        data = stbi_load_gif_from_memory(result.data, (int)result.size, &delays, &x, &y, &z, &comp, 0);
+        if (!data) {
+            return enif_make_tuple2(env,
+                                    enif_make_atom(env, "error"),
+                                    enif_make_string(env, "cannot decode the given GIF file", ERL_NIF_LATIN1)
+            );
+        }
+
+        ERL_NIF_TERM * delays_term = (ERL_NIF_TERM *)malloc(sizeof(ERL_NIF_TERM) * z);
+        ERL_NIF_TERM * frames_term = (ERL_NIF_TERM *)malloc(sizeof(ERL_NIF_TERM) * z);
+        ErlNifBinary * frames_result = (ErlNifBinary *)malloc(sizeof(ErlNifBinary) * z);;
+        bool ok = true;
+        unsigned char *start = data;
+        size_t offset = x * y * sizeof(unsigned char);
+        for (int i = 0; i < z; ++i) {
+            if (enif_alloc_binary(x * y * sizeof(unsigned char), &frames_result[i])) {
+                memcpy(frames_result[i].data, start, frames_result[i].size);
+                frames_term[i] = enif_make_binary(env, &frames_result[i]);
+                if (delays) {
+                    delays_term[i] = enif_make_int(env, delays[i]);
+                } else {
+                    delays_term[i] = enif_make_int(env, -1);
+                }
+
+                start += offset;
+            } else {
+                ok = false;
+                break;
+            }
+        }
+
+        if (!ok) {
+            free((void *)data);
+            free((void *)frames_term);
+            free((void *)delays_term);
+            free((void *)frames_result);
+            free((void *)delays);
+            return enif_make_tuple2(env,
+                                    enif_make_atom(env, "error"),
+                                    enif_make_string(env, "out of memory", ERL_NIF_LATIN1)
+            );
+        }
+
+        ERL_NIF_TERM frames_ret = enif_make_list_from_array(env, frames_term, z);
+        ERL_NIF_TERM delays_ret = enif_make_list_from_array(env, delays_term, z);
+        ERL_NIF_TERM ret_val = enif_make_tuple4(env,
+                                               enif_make_atom(env, "ok"),
+                                               frames_ret,
+                                               enif_make_tuple3(env,
+                                                               enif_make_int(env, y),
+                                                               enif_make_int(env, x),
+                                                               enif_make_int(env, 3)
+                                               ),
+                                               delays_ret
+                                               );
+        free((void *)data);
+        free((void *)frames_term);
+        free((void *)delays_term);
+        free((void *)frames_result);
+        free((void *)delays);
+        return ret_val;
+    } else {
+        return enif_make_badarg(env);
+    }
+}
+
 static int on_load(ErlNifEnv* env, void**, ERL_NIF_TERM)
 {
     return 0;
@@ -138,6 +214,7 @@ static int on_upgrade(ErlNifEnv*, void**, void**, ERL_NIF_TERM)
 static ErlNifFunc nif_functions[] = {
     {"from_file", 3, from_file, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"from_memory", 3, from_memory, ERL_NIF_DIRTY_JOB_CPU_BOUND},
+    {"gif_from_memory", 1, gif_from_memory, ERL_NIF_DIRTY_JOB_CPU_BOUND},
 };
 
 ERL_NIF_INIT(Elixir.StbImage.Nif, nif_functions, on_load, on_reload, on_upgrade, NULL);

@@ -10,7 +10,7 @@ defmodule StbImage do
 
   ## Example
   ```elixir
-  {:ok, img, shape, type} = StbImage.from_file("/path/to/image")
+  {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image")
   {h, w, c} = shape
   ```
   """
@@ -25,7 +25,7 @@ defmodule StbImage do
   ## Example
   ```elixir
   # if you know the image is a 4-channel image and auto-detection failed
-  {:ok, img, shape, type} = StbImage.from_file("/path/to/image", 4)
+  {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image", 4)
   {h, w, c} = shape
   ```
   """
@@ -44,7 +44,7 @@ defmodule StbImage do
   ```elixir
   # Use 0 for auto-detecting number of channels
   # but specify each channel is in float (32-bit)
-  {:ok, img, shape, type} = StbImage.from_file("/path/to/image", 0, :f32)
+  {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image", 0, :f32)
   {h, w, c} = shape
   ```
   """
@@ -64,7 +64,7 @@ defmodule StbImage do
   # image buffer from a file or perhaps download from Internet
   {:ok, buffer} = File.read("/path/to/image")
   # decode the image from memory
-  {:ok, img, shape, type} = StbImage.from_memory(buffer)
+  {:ok, img, shape, type, channels} = StbImage.from_memory(buffer)
   {h, w, c} = shape
   ```
   """
@@ -82,7 +82,7 @@ defmodule StbImage do
   {:ok, buffer} = File.read("/path/to/image")
   # decode the image from memory
   # and specify it is a 4-channel image
-  {:ok, img, shape, type} = StbImage.from_memory(buffer, 4)
+  {:ok, img, shape, type, channels} = StbImage.from_memory(buffer, 4)
   {h, w, c} = shape
   ```
   """
@@ -103,7 +103,7 @@ defmodule StbImage do
   {:ok, buffer} = File.read("/path/to/image")
   # decode the image from memory
   # and specify it is a 3-channel image and each channel is in uint8_t
-  {:ok, img, shape, type} = StbImage.from_memory(buffer, 3, :u8)
+  {:ok, img, shape, type, channels} = StbImage.from_memory(buffer, 3, :u8)
   {h, w, c} = shape
   ```
   """
@@ -112,4 +112,40 @@ defmodule StbImage do
              (type == :u8 or type == :u16 or type == :f32) do
     StbImage.Nif.from_memory(buffer, desired_channels, type)
   end
+
+  @doc """
+  Decode GIF image from a given file
+
+  - **filename**. Path to the GIF image.
+
+  ## Example
+  ```elixir
+  {:ok, frames, shape, delays} = StbImage.gif_from_file("/path/to/image")
+  {h, w, 3} = shape
+  # GIFs always have channels == :rgb and type == :u8
+  # delays is a list that has n elements, where n is the number of frames
+  ```
+  """
+  def gif_from_file(filename) do
+    with {:ok, buffer} <- File.read(filename) do
+      gif_from_memory(buffer)
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @doc """
+  Decode image from buffer in memory
+
+  - **buffer**. Path to the image.
+
+  ## Example
+  ```elixir
+  {:ok, buffer} = File.read("/path/to/image")
+  {:ok, frames, shape, delays} = StbImage.gif_from_memory(buffer)
+  {h, w, 3} = shape
+  # delays is a list that has n elements, where n is the number of frames
+  ```
+  """
+  def gif_from_memory(buffer), do: StbImage.Nif.gif_from_memory(buffer)
 end

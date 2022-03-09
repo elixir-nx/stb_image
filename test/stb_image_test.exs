@@ -47,4 +47,13 @@ defmodule ImgDecodeTest do
              <<180, 128, 70, 148, 128, 78, 89, 134, 101, 222, 170, 112, 182, 162, 112, 112, 157,
                124>>
   end
+
+  test "decode gif" do
+    {:ok, frames, shape, delays} = StbImage.gif_from_file(Path.join(__DIR__, "test.gif"))
+    assert shape == {2, 3, 3}
+    assert 2 == Enum.count(frames)
+
+    assert frames ==
+             [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]
+  end
 end

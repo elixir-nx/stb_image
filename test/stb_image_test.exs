@@ -1,5 +1,6 @@
-defmodule ImgDecodeTest do
-  use ExUnit.Case
+defmodule StbImageTest do
+  use ExUnit.Case, async: true
+
   doctest StbImage
 
   test "decode png from file" do
@@ -52,6 +53,7 @@ defmodule ImgDecodeTest do
     {:ok, frames, shape, delays} = StbImage.gif_from_file(Path.join(__DIR__, "test.gif"))
     assert shape == {2, 3, 3}
     assert 2 == Enum.count(frames)
+    assert delays == [200, 200]
 
     assert frames ==
              [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]

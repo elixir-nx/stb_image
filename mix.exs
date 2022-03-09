@@ -1,18 +1,20 @@
-defmodule ImgDecode.MixProject do
+defmodule StbImage.MixProject do
   use Mix.Project
 
-  @github_url "https://github.com/cocoa-xu/stb_image"
+  @version "0.1.2"
+  @github_url "https://github.com/elixir-nx/stb_image"
+
   def project do
     [
       app: :stb_image,
       version: "0.1.2",
       elixir: "~> 1.12",
-      start_permanent: Mix.env() == :prod,
       compilers: [:elixir_make] ++ Mix.compilers(),
-      description: description(),
-      package: package(),
       deps: deps(),
-      source_url: @github_url
+      name: "StbImage",
+      description: "A tiny image library using stb_image as the backend",
+      docs: docs(),
+      package: package()
     ]
   end
 
@@ -22,14 +24,18 @@ defmodule ImgDecode.MixProject do
     ]
   end
 
-  defp description() do
-    "A tiny Elixir library for image decoding task using stb_image as the backend."
-  end
-
   defp deps do
     [
       {:elixir_make, "~> 0.6"},
-      {:ex_doc, "~> 0.23", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.23", only: :docs, runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "StbImage",
+      source_ref: "v#{@version}",
+      source_url: @github_url
     ]
   end
 

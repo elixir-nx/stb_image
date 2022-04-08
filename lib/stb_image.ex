@@ -162,4 +162,8 @@ defmodule StbImage do
 
   """
   def gif_from_memory(buffer), do: StbImage.Nif.gif_from_memory(buffer)
+
+  def to_file(filename, extension, data, width, height, channels) do
+    StbImage.Nif.to_file(filename, extension, data, width, height, channels)
+  end
 end

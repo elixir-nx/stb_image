@@ -215,6 +215,9 @@ static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
             }
         } else if (extension == "jpg" || extension == "hdr") {
             int quality = 0;
+            if(extension == "hdr"){
+                std::cout<<"WARNING: hdr image will be saved as jpg."<<std::endl;
+            }
             int status = stbi_write_jpg(filename.c_str(), w, h, comp, result.data, quality);
             if (!status) {
                 return erlang::nif::error(env, "Unsuccesful attempt to write to jpg (or hdr)");

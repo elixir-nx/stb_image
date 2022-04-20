@@ -60,4 +60,19 @@ defmodule StbImageTest do
   end
 
 
+  test "save image png" do
+    read = StbImage.from_file(Path.join(__DIR__, "test.png"))
+    {:ok, img, {height, width, num_channels}, _, _} = read
+    :ok = StbImage.to_file(Path.join(__DIR__, "save_test.png"), "png", img, width, height, num_channels)
+    assert StbImage.from_file(Path.join(__DIR__, "save_test.png")) == read
+  end
+
+  test "save image tga" do
+    read = StbImage.from_file(Path.join(__DIR__, "test.tga"))
+    {:ok, img, {height, width, num_channels}, _, _} = read
+    :ok = StbImage.to_file(Path.join(__DIR__, "save_test.tga"), "tga", img, width, height, num_channels)
+    assert StbImage.from_file(Path.join(__DIR__, "save_test.tga")) == read
+  end
+
+
 end

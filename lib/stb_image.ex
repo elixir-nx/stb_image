@@ -65,7 +65,7 @@ defmodule StbImage do
 
   """
   def from_file(filename, desired_channels, type)
-      when is_integer(desired_channels) and desired_channels >= 0 and
+      when (is_binary(filename) or is_list(filename)) and is_integer(desired_channels) and desired_channels >= 0 and
              type in @types do
     filename = if is_binary(filename), do: String.to_charlist(filename), else: filename
     StbImage.Nif.from_file(filename, desired_channels, type)

@@ -24,3 +24,8 @@ img_decode-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+.DS_Store
+.idea/
+.vscode/
+
+image_rs/priv/

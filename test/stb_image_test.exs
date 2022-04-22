@@ -16,7 +16,7 @@ defmodule StbImageTest do
 
   test "decode as u16" do
     {:ok, img, shape, type, channels} =
-      StbImage.from_file(Path.join(__DIR__, "test.png"), 0, :u16)
+      StbImage.from_file(Path.join(__DIR__, "test.png"), type: :u16)
 
     assert type == :u16
     assert shape == {2, 3, 4}
@@ -29,7 +29,7 @@ defmodule StbImageTest do
 
   test "decode as f32" do
     {:ok, img, shape, type, channels} =
-      StbImage.from_file(Path.join(__DIR__, "test.png"), 0, :f32)
+      StbImage.from_file(Path.join(__DIR__, "test.png"), type: :f32)
 
     assert type == :f32
     assert shape == {2, 3, 4}

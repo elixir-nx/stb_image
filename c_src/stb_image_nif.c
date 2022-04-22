@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #define MAX_NAME_LENGTH 2048
-#define MAX_TYPE_LENGTH 3
+#define MAX_TYPE_LENGTH 4
 
 #include "nif_utils.h"
 

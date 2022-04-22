@@ -65,8 +65,9 @@ defmodule StbImage do
 
   """
   def from_file(filename, desired_channels, type)
-      when is_binary(filename) and is_integer(desired_channels) and desired_channels >= 0 and
+      when (is_binary(filename) or is_list(filename)) and is_integer(desired_channels) and desired_channels >= 0 and
              type in @types do
+    filename = if is_binary(filename), do: String.to_charlist(filename), else: filename
     StbImage.Nif.from_file(filename, desired_channels, type)
   end
 
@@ -162,4 +163,11 @@ defmodule StbImage do
 
   """
   def gif_from_memory(buffer), do: StbImage.Nif.gif_from_memory(buffer)
+
+  def to_file(filename, extension, data, width, height, channels)
+    when extension in ~w(jpg png bmp tga) and is_bitstring(data) and is_integer(width) and is_integer(height) and is_integer(channels) do
+    filename = if is_binary(filename), do: String.to_charlist(filename), else: filename
+    extension = String.to_charlist(extension)
+    StbImage.Nif.to_file(filename, extension, data, width, height, channels)
+  end
 end

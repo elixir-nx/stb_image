@@ -5,7 +5,7 @@ C_SRC = $(shell pwd)/c_src
 LIB_SRC = $(shell pwd)/lib
 THIRD_PARTY = $(shell pwd)/3rd_party
 STB_INCLUDE_DIR = $(THIRD_PARTY)/stb
-CPPFLAGS += -shared -std=c++14 -O3 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fPIC
+CPPFLAGS += -shared -std=c11 -O3 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fPIC
 CPPFLAGS += -I$(ERTS_INCLUDE_DIR) -I$(STB_INCLUDE_DIR)
 
 UNAME_S := $(shell uname -s)
@@ -19,4 +19,4 @@ build: $(STB_IMAGE_NIF_SO)
 
 $(STB_IMAGE_NIF_SO):
 	@ mkdir -p $(PRIV_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(C_SRC)/stb_image_nif.cpp -o $(STB_IMAGE_NIF_SO)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(C_SRC)/stb_image_nif.c -o $(STB_IMAGE_NIF_SO)

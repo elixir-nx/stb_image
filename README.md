@@ -1,13 +1,8 @@
-# StbImage-Elixir
+# StbImage
 
-A tiny image library using [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) as the backend. [See the documentation](https://hexdocs.pm/stb_image).
+A tiny image reader/writer library using [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) as the backend. [See the documentation](https://hexdocs.pm/stb_image).
 
 There is an alternative library, [image_rs](https://github.com/cocoa-xu/image_rs), which uses [image_rs](https://github.com/image-rs/image) as the backend. That backend is implemented in Rust, so you will need a working Rust compiler. But the number of supported image formats is greater than `stb_image`.
-
-| OS               | Build Status |
-|------------------|--------------|
-| Ubuntu 20.04     | [![CI](https://github.com/elixir-nx/stb_image/actions/workflows/linux.yml/badge.svg)](https://github.com/elixir-nx/stb_image/actions/workflows/linux.yml) |
-| macOS 11         | [![CI](https://github.com/elixir-nx/stb_image/actions/workflows/macos.yml/badge.svg)](https://github.com/elixir-nx/stb_image/actions/workflows/macos.yml) |
 
 ## Installation
 
@@ -16,7 +11,7 @@ Add `stb_image` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:stb_image, "~> 0.1.2"}
+    {:stb_image, "~> 0.2.0"}
   ]
 end
 ```

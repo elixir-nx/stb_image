@@ -88,8 +88,7 @@ defmodule StbImageTest do
              [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]
   end
 
-  # .jpg looks different after compression, so we skip it.
-  for ext <- ~w(bmp png tga) do
+  for ext <- ~w(bmp png tga jpg) do
     @ext ext
 
     test "save image #{@ext}" do

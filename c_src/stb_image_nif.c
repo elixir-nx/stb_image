@@ -247,7 +247,7 @@ static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
             return error(env, "unsuccesful attempt to write to tga");
         }
     } else if (strcmp(extension, "jpg") == 0) {
-        int quality = 0;
+        int quality = 100;
         int status = stbi_write_jpg(filename, w, h, comp, result.data, quality);
         if (!status) {
             return error(env, "unsuccesful attempt to write to jpg");

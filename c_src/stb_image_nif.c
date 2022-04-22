@@ -8,6 +8,7 @@
 
 #define MAX_NAME_LENGTH 2048
 #define MAX_TYPE_LENGTH 4
+#define MAX_EXTNAME_LENGTH 4
 
 #include "nif_utils.h"
 
@@ -56,28 +57,37 @@ static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     char type[MAX_TYPE_LENGTH];
     char filename[MAX_NAME_LENGTH];
     int desired_channels = 0;
-    if (enif_get_int(env, argv[1], &desired_channels) && enif_get_string(env, argv[0], filename, sizeof(filename), ERL_NIF_LATIN1) && enif_get_atom(env, argv[2], type, sizeof(type), ERL_NIF_LATIN1)) {
-        int bytes_per_channel;
-        int x, y, n;
-        unsigned char *data;
-        if (strcmp(type, "u8") == 0) {
-            data = (unsigned char *)stbi_load(filename, &x, &y, &n, desired_channels);
-            bytes_per_channel = sizeof(unsigned char);
-        } else if (strcmp(type, "u16") == 0) {
-            data = (unsigned char *)stbi_load_16(filename, &x, &y, &n, desired_channels);
-            bytes_per_channel = sizeof(unsigned char);
-        } else if (strcmp(type, "f32") == 0) {
-            data = (unsigned char *)stbi_loadf(filename, &x, &y, &n, desired_channels);
-            bytes_per_channel = sizeof(float);
-        } else
-            return enif_make_badarg(env);
 
-        ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel, type);
-        free((void *)data);
-        return ret;
-    } else {
-        return enif_make_badarg(env);
+    if (!enif_get_string(env, argv[0], filename, sizeof(filename), ERL_NIF_LATIN1)) {
+        return error(env, "invalid filename");
     }
+
+    if(!enif_get_int(env, argv[1], &desired_channels)) {
+        return error(env, "invalid channels");
+    }
+
+    if(!enif_get_atom(env, argv[2], type, sizeof(type), ERL_NIF_LATIN1)) {
+        return error(env, "invalid type");
+    }
+
+    int bytes_per_channel;
+    int x, y, n;
+    unsigned char *data;
+    if (strcmp(type, "u8") == 0) {
+        data = (unsigned char *)stbi_load(filename, &x, &y, &n, desired_channels);
+        bytes_per_channel = sizeof(unsigned char);
+    } else if (strcmp(type, "u16") == 0) {
+        data = (unsigned char *)stbi_load_16(filename, &x, &y, &n, desired_channels);
+        bytes_per_channel = sizeof(unsigned char);
+    } else if (strcmp(type, "f32") == 0) {
+        data = (unsigned char *)stbi_loadf(filename, &x, &y, &n, desired_channels);
+        bytes_per_channel = sizeof(float);
+    } else
+        return error(env, "invalid type");
+
+    ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel, type);
+    free((void *)data);
+    return ret;
 }
 
 static ERL_NIF_TERM from_memory(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
@@ -89,27 +99,36 @@ static ERL_NIF_TERM from_memory(ErlNifEnv *env, int argc, const ERL_NIF_TERM arg
     char type[MAX_NAME_LENGTH];
     int x, y, n;
     unsigned char *data;
-    if (enif_inspect_binary(env, argv[0], &result) &&
-        enif_get_int(env, argv[1], &desired_channels) && enif_get_atom(env, argv[2], type, sizeof(type), ERL_NIF_LATIN1)) {
-        int bytes_per_channel;
-        if (strcmp(type, "u8") == 0) {
-            data = (unsigned char *)stbi_load_from_memory(result.data, (int)result.size, &x, &y, &n, desired_channels);
-            bytes_per_channel = sizeof(unsigned char);
-        } else if (strcmp(type, "u16") == 0) {
-            data = (unsigned char *)stbi_load_16_from_memory(result.data, (int)result.size, &x, &y, &n, desired_channels);
-            bytes_per_channel = sizeof(unsigned char);
-        } else if (strcmp(type, "f32") == 0) {
-            data = (unsigned char *)stbi_loadf_from_memory(result.data, (int)result.size, &x, &y, &n, desired_channels);
-            bytes_per_channel = sizeof(float);
-        } else
-            return enif_make_badarg(env);
 
-        ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel, type);
-        free((void *)data);
-        return ret;
-    } else {
-        return enif_make_badarg(env);
+    if (!enif_inspect_binary(env, argv[0], &result)) {
+        return error(env, "invalid buffer");
     }
+
+    if(!enif_get_int(env, argv[1], &desired_channels)) {
+        return error(env, "invalid channels");
+    }
+
+    if(!enif_get_atom(env, argv[2], type, sizeof(type), ERL_NIF_LATIN1)) {
+        return error(env, "invalid type");
+    }
+
+    int bytes_per_channel;
+
+    if (strcmp(type, "u8") == 0) {
+        data = (unsigned char *)stbi_load_from_memory(result.data, (int)result.size, &x, &y, &n, desired_channels);
+        bytes_per_channel = sizeof(unsigned char);
+    } else if (strcmp(type, "u16") == 0) {
+        data = (unsigned char *)stbi_load_16_from_memory(result.data, (int)result.size, &x, &y, &n, desired_channels);
+        bytes_per_channel = sizeof(unsigned char);
+    } else if (strcmp(type, "f32") == 0) {
+        data = (unsigned char *)stbi_loadf_from_memory(result.data, (int)result.size, &x, &y, &n, desired_channels);
+        bytes_per_channel = sizeof(float);
+    } else
+        return error(env, "invalid type");
+
+    ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel, type);
+    free((void *)data);
+    return ret;
 }
 
 static ERL_NIF_TERM gif_from_memory(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
@@ -187,25 +206,25 @@ static ERL_NIF_TERM gif_from_memory(ErlNifEnv *env, int argc, const ERL_NIF_TERM
 
 static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 6) {
-        return error(env, "expecting 6 arguments: filename, extension, data, width, height and number of channels");
+        return error(env, "expecting 6 arguments: filename, extension, data, height, width, and number of channels");
     }
-    char filename[MAX_NAME_LENGTH], extension[MAX_NAME_LENGTH];
+    char filename[MAX_NAME_LENGTH], extension[MAX_EXTNAME_LENGTH];
     ErlNifBinary result;
     int w = 0, h = 0, comp = 0;
     if (!enif_get_string(env, argv[0], filename, sizeof(filename), ERL_NIF_LATIN1)) {
         return error(env, "invalid filename");
     }
-    if (!enif_get_string(env, argv[1], extension, sizeof(extension), ERL_NIF_LATIN1)) {
+    if (!enif_get_atom(env, argv[1], extension, sizeof(extension), ERL_NIF_LATIN1)) {
         return error(env, "invalid extension");
     }
     if (!enif_inspect_binary(env, argv[2], &result)) {
         return error(env, "invalid binary data");
     }
-    if (!enif_get_int(env, argv[3], &w)) {
-        return error(env, "invalid width");
-    }
-    if (!enif_get_int(env, argv[4], &h)) {
+    if (!enif_get_int(env, argv[3], &h)) {
         return error(env, "invalid height");
+    }
+    if (!enif_get_int(env, argv[4], &w)) {
+        return error(env, "invalid width");
     }
     if (!enif_get_int(env, argv[5], &comp)) {
         return error(env, "invalid number of channels");

@@ -17,157 +17,142 @@ defmodule StbImage do
   There are also specific functions for working with GIFs.
   """
 
-  @types [:u8, :u16, :f32]
-
   @doc """
-  Decode image from a given file
+  Decodes image at the given `filename`.
 
-  - `filename`. Path to the image.
+  ## Options
+
+    * `:channels` - The number of desired channels.
+      Use `0` for auto-detection. Defaults to 0.
+
+    * `:type` - The type of the data. Defaults to `:u8`.
+      Must be one of `:u8`, `:u16`, `:f32`.
 
   ## Example
 
       {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image")
       {h, w, c} = shape
 
-  """
-  def from_file(filename), do: from_file(filename, 0, :u8)
-
-  @doc """
-  Decode image from a given file
-
-  - `filename`. Path to the image.
-  - `desired_channels`. `0` for auto-detection. Otherwise, the number of desired channels.
-
-  ## Example
-
-      # if you know the image is a 4-channel image and auto-detection failed
-      {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image", 4)
+      # If you know the image is a 4-channel image and auto-detection failed
+      {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image", channels: 4)
       {h, w, c} = shape
 
   """
-  def from_file(filename, desired_channels) do
-    from_file(filename, desired_channels, :u8)
-  end
-
-  @doc """
-  Decode image from a given file
-
-  - `filename`. Path to the image.
-  - `desired_channels`. `0` for auto-detection. Otherwise, the number of desired channels.
-  - `type`. Specify format for each channel. `:u8`, `:u16` or `:f32`.
-
-  ## Example
-
-      # Use 0 for auto-detecting number of channels
-      # but specify each channel is in float (32-bit)
-      {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image", 0, :f32)
-      {h, w, c} = shape
-
-  """
-  def from_file(filename, desired_channels, type)
-      when (is_binary(filename) or is_list(filename)) and is_integer(desired_channels) and desired_channels >= 0 and
-             type in @types do
+  def from_file(filename, opts \\ [])
+      when (is_binary(filename) or is_list(filename)) and is_list(opts) do
     filename = if is_binary(filename), do: String.to_charlist(filename), else: filename
-    StbImage.Nif.from_file(filename, desired_channels, type)
+    type = opts[:type] || :u8
+    channels = opts[:channels] || 0
+    StbImage.Nif.from_file(filename, channels, type)
   end
 
   @doc """
-  Decode image from buffer in memory
+  Decodes image from `buffer` in memory.
 
-  - `buffer`. Buffered raw file data in memory.
+  ## Options
+
+    * `:channels` - The number of desired channels.
+      Use `0` for auto-detection. Defaults to 0.
+
+    * `:type` - The type of the data. Defaults to `:u8`.
+      Must be one of `:u8`, `:u16`, `:f32`.
 
   ## Example
 
-      # image buffer from a file or perhaps download from Internet
+
       {:ok, buffer} = File.read("/path/to/image")
-      # decode the image from memory
       {:ok, img, shape, type, channels} = StbImage.from_memory(buffer)
       {h, w, c} = shape
 
-  """
-  def from_memory(buffer), do: from_memory(buffer, 0, :u8)
-
-  @doc """
-  Decode image from buffer in memory
-
-  - `buffer`. Buffered raw file data in memory.
-  - `desired_channels`. `0` for auto-detection. Otherwise, the number of desired channels.
-
-  ## Example
-
-      # image buffer from a file or perhaps download from Internet
-      {:ok, buffer} = File.read("/path/to/image")
-      # decode the image from memory
-      # and specify it is a 4-channel image
-      {:ok, img, shape, type, channels} = StbImage.from_memory(buffer, 4)
+      # If you know the image is a 4-channel image and auto-detection failed
+      {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image", channels: 4)
       {h, w, c} = shape
 
   """
-  def from_memory(buffer, desired_channels) do
-    from_memory(buffer, desired_channels, :u8)
+  def from_memory(buffer, opts \\ []) when is_binary(buffer) and is_list(opts) do
+    type = opts[:type] || :u8
+    channels = opts[:channels] || 0
+    StbImage.Nif.from_memory(buffer, channels, type)
   end
 
   @doc """
-  Decode image from buffer in memory
-
-  - `buffer`. Buffered raw file data in memory.
-  - `desired_channels`. `0` for auto-detection. Otherwise, the number of desired channels.
-  - `type`. Specify format for each channel. `:u8`, `:u16` or `:f32`.
-
-  ## Example
-
-      # image buffer from a file or perhaps download from Internet
-      {:ok, buffer} = File.read("/path/to/image")
-      # decode the image from memory
-      # and specify it is a 3-channel image and each channel is in uint8_t
-      {:ok, img, shape, type, channels} = StbImage.from_memory(buffer, 3, :u8)
-      {h, w, c} = shape
-
-  """
-  def from_memory(buffer, desired_channels, type)
-      when is_binary(buffer) and is_integer(desired_channels) and desired_channels >= 0 and
-             type in @types do
-    StbImage.Nif.from_memory(buffer, desired_channels, type)
-  end
-
-  @doc """
-  Decode GIF image from a given file
-
-  - `filename`. Path to the GIF image.
+  Decodes GIF image from `filename`.
 
   ## Example
 
       {:ok, frames, shape, delays} = StbImage.gif_from_file("/path/to/image")
       {h, w, 3} = shape
+
       # GIFs always have channels == :rgb and type == :u8
       # delays is a list that has n elements, where n is the number of frames
 
   """
-  def gif_from_file(filename) do
+  def gif_from_file(filename) when is_binary(filename) or is_list(filename) do
     with {:ok, buffer} <- File.read(filename) do
       gif_from_memory(buffer)
     end
   end
 
   @doc """
-  Decode image from buffer in memory
-
-  - `buffer`. Path to the image.
+  Decodes GIF image from `buffer` in memory.
 
   ## Example
 
       {:ok, buffer} = File.read("/path/to/image")
       {:ok, frames, shape, delays} = StbImage.gif_from_memory(buffer)
       {h, w, 3} = shape
+
+      # GIFs always have channels == :rgb and type == :u8
       # delays is a list that has n elements, where n is the number of frames
 
   """
-  def gif_from_memory(buffer), do: StbImage.Nif.gif_from_memory(buffer)
+  def gif_from_memory(buffer) when is_binary(buffer), do: StbImage.Nif.gif_from_memory(buffer)
 
-  def to_file(filename, extension, data, width, height, channels)
-    when extension in ~w(jpg png bmp tga) and is_bitstring(data) and is_integer(width) and is_integer(height) and is_integer(channels) do
+  @to_file_exts ~w(jpg png bmp tga)a
+
+  @doc """
+  Saves image to `filename`.
+
+  The format of the file is taken to the filename extension.
+  Only .jpg, .png, .bmp, and .tga are supported. You can also
+  pass the `:extension` as an atom option.
+
+  This function also requires the `height`, `width`, and
+  number of `channels` to be given.
+
+  Returns `:ok` if suceeds.
+
+  Make sure the directory you intent to write the file to
+  exists, otherwise it will return an `{:error, reason}`
+  tuple.
+  """
+  def to_file(filename, data, height, width, channels, opts \\ [])
+      when is_binary(data) and is_integer(width) and width > 0 and is_integer(height) and
+             height > 0 and is_integer(channels) and channels > 0 and
+             is_list(opts) do
+    extension = opts[:extension] || extname!(filename)
+
+    if extension not in @to_file_exts do
+      badext!(extension)
+    end
+
     filename = if is_binary(filename), do: String.to_charlist(filename), else: filename
-    extension = String.to_charlist(extension)
-    StbImage.Nif.to_file(filename, extension, data, width, height, channels)
+    StbImage.Nif.to_file(filename, extension, data, height, width, channels)
+  end
+
+  defp extname!(filename) do
+    case Path.extname(filename) do
+      ".jpg" -> :jpg
+      ".png" -> :png
+      ".bmp" -> :bmp
+      ".tga" -> :tga
+      _ -> badext!(filename)
+    end
+  end
+
+  defp badext!(ext) do
+    raise ArgumentError,
+          "trying to save image to file with unsupported extension #{ext}. " <>
+            "Please set the :extension option to one of #{inspect(@to_file_exts)}"
   end
 end

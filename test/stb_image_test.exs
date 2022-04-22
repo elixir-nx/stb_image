@@ -88,21 +88,22 @@ defmodule StbImageTest do
              [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]
   end
 
-  test "save image png" do
-    read = StbImage.from_file(Path.join(__DIR__, "test.png"))
-    {:ok, img, {height, width, num_channels}, _, _} = read
-    save_at = Path.join(__DIR__, "save_test.png")
-    :ok = StbImage.to_file(save_at, "png", img, width, height, num_channels)
-    assert StbImage.from_file(save_at) == read
-    File.rm!(save_at)
-  end
+  # .jpg looks different after compression, so we skip it.
+  for ext <- ~w(bmp png tga) do
+    @ext ext
 
-  test "save image tga" do
-    read = StbImage.from_file(Path.join(__DIR__, "test.tga"))
-    {:ok, img, {height, width, num_channels}, _, _} = read
-    save_at = Path.join(__DIR__, "save_test.tga")
-    :ok = StbImage.to_file(save_at, "tga", img, width, height, num_channels)
-    assert StbImage.from_file(save_at) == read
-    File.rm!(save_at)
+    test "save image #{@ext}" do
+      read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
+      {:ok, img, {height, width, num_channels}, _, _} = read
+      save_at = "tmp/save_test.#{@ext}"
+
+      try do
+        File.mkdir_p!("tmp")
+        :ok = StbImage.to_file(save_at, img, height, width, num_channels)
+        assert StbImage.from_file(save_at) == read
+      after
+        File.rm!(save_at)
+      end
+    end
   end
 end

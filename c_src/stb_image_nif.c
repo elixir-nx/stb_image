@@ -6,7 +6,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define MAX_NAME_LENGTH 9999
+#define MAX_NAME_LENGTH 2048
+#define MAX_TYPE_LENGTH 3
 
 #include "nif_utils.h"
 
@@ -52,7 +53,7 @@ static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     if (argc != 3) {
         return error(env, "expecting 3 arguments: filename, desired_channels, type");
     }
-    char type[MAX_NAME_LENGTH];
+    char type[MAX_TYPE_LENGTH];
     char filename[MAX_NAME_LENGTH];
     int desired_channels = 0;
     if (enif_get_int(env, argv[1], &desired_channels) && enif_get_string(env, argv[0], filename, sizeof(filename), ERL_NIF_LATIN1) && enif_get_atom(env, argv[2], type, sizeof(type), ERL_NIF_LATIN1)) {
@@ -195,7 +196,7 @@ static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
         return error(env, "invalid filename");
     }
     if (!enif_get_string(env, argv[1], extension, sizeof(extension), ERL_NIF_LATIN1)) {
-        return error(env, "invalid filename");
+        return error(env, "invalid extension");
     }
     if (!enif_inspect_binary(env, argv[2], &result)) {
         return error(env, "invalid binary data");
@@ -219,21 +220,21 @@ static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
     } else if (strcmp(extension, "bmp") == 0) {
         int status = stbi_write_bmp(filename, w, h, comp, result.data);
         if (!status) {
-            return error(env, "Unsuccesful attempt to write to bmp");
+            return error(env, "unsuccesful attempt to write to bmp");
         }
     } else if (strcmp(extension, "tga") == 0) {
         int status = stbi_write_tga(filename, w, h, comp, result.data);
         if (!status) {
-            return error(env, "Unsuccesful attempt to write to tga");
+            return error(env, "unsuccesful attempt to write to tga");
         }
     } else if (strcmp(extension, "jpg") == 0) {
         int quality = 0;
         int status = stbi_write_jpg(filename, w, h, comp, result.data, quality);
         if (!status) {
-            return error(env, "Unsuccesful attempt to write to jpg");
+            return error(env, "unsuccesful attempt to write to jpg");
         }
     } else {
-        return error(env, "Wrong extension.");
+        return error(env, "wrong extension");
     }
 
     return enif_make_atom(env, "ok");
@@ -252,10 +253,10 @@ static int on_upgrade(ErlNifEnv *_sth0, void **_sth1, void **_sth2, ERL_NIF_TERM
 }
 
 static ErlNifFunc nif_functions[] = {
-    {"from_file", 3, from_file, ERL_NIF_DIRTY_JOB_CPU_BOUND},
+    {"from_file", 3, from_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"from_memory", 3, from_memory, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"gif_from_memory", 1, gif_from_memory, ERL_NIF_DIRTY_JOB_CPU_BOUND},
-    {"to_file", 6, to_file, ERL_NIF_DIRTY_JOB_CPU_BOUND}};
+    {"to_file", 6, to_file, ERL_NIF_DIRTY_JOB_IO_BOUND}};
 
 ERL_NIF_INIT(Elixir.StbImage.Nif, nif_functions, on_load, on_reload, on_upgrade, NULL);
 

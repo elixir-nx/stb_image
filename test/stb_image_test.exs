@@ -59,7 +59,6 @@ defmodule StbImageTest do
              [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]
   end
 
-
   test "save image png" do
     read = StbImage.from_file(Path.join(__DIR__, "test.png"))
     {:ok, img, {height, width, num_channels}, _, _} = read
@@ -77,6 +76,4 @@ defmodule StbImageTest do
     assert StbImage.from_file(save_at) == read
     File.rm!(save_at)
   end
-
-
 end

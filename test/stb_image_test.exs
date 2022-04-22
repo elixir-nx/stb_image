@@ -14,6 +14,35 @@ defmodule StbImageTest do
                205, 145, 255, 144, 184, 200, 255>>
   end
 
+  test "decode as u16" do
+    {:ok, img, shape, type, channels} =
+      StbImage.from_file(Path.join(__DIR__, "test.png"), type: :u16)
+
+    assert type == :u16
+    assert shape == {2, 3, 4}
+    assert channels == :rgba
+
+    assert img ==
+             <<241, 241, 145, 145, 126, 126, 255, 255, 136, 136, 190, 190, 78, 78, 255, 255, 68,
+               68, 122, 122, 183, 183, 255, 255>>
+  end
+
+  test "decode as f32" do
+    {:ok, img, shape, type, channels} =
+      StbImage.from_file(Path.join(__DIR__, "test.png"), type: :f32)
+
+    assert type == :f32
+    assert shape == {2, 3, 4}
+    assert channels == :rgba
+
+    assert img ==
+             <<17, 24, 98, 63, 177, 223, 147, 62, 42, 34, 89, 62, 0, 0, 128, 63, 34, 110, 128, 62,
+               95, 0, 6, 63, 3, 51, 151, 61, 0, 0, 128, 63, 40, 156, 95, 61, 191, 65, 74, 62, 114,
+               194, 246, 62, 0, 0, 128, 63, 3, 85, 104, 63, 224, 124, 15, 63, 6, 100, 1, 63, 0, 0,
+               128, 63, 95, 0, 6, 63, 48, 98, 30, 63, 177, 223, 147, 62, 0, 0, 128, 63, 180, 163,
+               145, 62, 93, 188, 249, 62, 84, 2, 22, 63, 0, 0, 128, 63>>
+  end
+
   test "decode jpg from file" do
     {:ok, img, shape, type, channels} = StbImage.from_file(Path.join(__DIR__, "test.jpg"))
     assert type == :u8

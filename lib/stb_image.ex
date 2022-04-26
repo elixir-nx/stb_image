@@ -59,7 +59,6 @@ defmodule StbImage do
 
   ## Example
 
-
       {:ok, buffer} = File.read("/path/to/image")
       {:ok, img, shape, type, channels} = StbImage.from_memory(buffer)
       {h, w, c} = shape
@@ -138,6 +137,24 @@ defmodule StbImage do
 
     filename = if is_binary(filename), do: String.to_charlist(filename), else: filename
     StbImage.Nif.to_file(filename, extension, data, height, width, channels)
+  end
+
+  @doc """
+  Encodes image to an in-memory binary.
+
+  ## Example
+
+      {:ok, buffer} = StbImage.to_memory(:png, img, height, width, channels)
+
+  """
+  def to_memory(extension, data, height, width, channels)
+      when is_binary(data) and is_integer(width) and width > 0 and is_integer(height) and
+             height > 0 and is_integer(channels) and channels > 0 do
+    if extension not in @to_file_exts do
+      badext!(extension)
+    end
+
+    StbImage.Nif.to_memory(extension, data, height, width, channels)
   end
 
   defp extname!(filename) do

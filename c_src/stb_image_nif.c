@@ -82,8 +82,9 @@ static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     } else if (strcmp(type, "f32") == 0) {
         data = (unsigned char *)stbi_loadf(filename, &x, &y, &n, desired_channels);
         bytes_per_channel = sizeof(float);
-    } else
+    } else {
         return error(env, "invalid type");
+    }
 
     ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel, type);
     free((void *)data);
@@ -123,8 +124,9 @@ static ERL_NIF_TERM from_memory(ErlNifEnv *env, int argc, const ERL_NIF_TERM arg
     } else if (strcmp(type, "f32") == 0) {
         data = (unsigned char *)stbi_loadf_from_memory(result.data, (int)result.size, &x, &y, &n, desired_channels);
         bytes_per_channel = sizeof(float);
-    } else
+    } else {
         return error(env, "invalid type");
+    }
 
     ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel, type);
     free((void *)data);
@@ -208,9 +210,11 @@ static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
     if (argc != 6) {
         return error(env, "expecting 6 arguments: filename, extension, data, height, width, and number of channels");
     }
+
     char filename[MAX_NAME_LENGTH], extension[MAX_EXTNAME_LENGTH];
     ErlNifBinary result;
-    int w = 0, h = 0, comp = 0;
+    int w, h, comp;
+
     if (!enif_get_string(env, argv[0], filename, sizeof(filename), ERL_NIF_LATIN1)) {
         return error(env, "invalid filename");
     }
@@ -234,29 +238,167 @@ static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
         int stride_in_bytes = 0;
         int status = stbi_write_png(filename, w, h, comp, result.data, stride_in_bytes);
         if (!status) {
-            return error(env, "Unsuccesful attempt to write to png");
+            return error(env, "filed to write png");
         }
     } else if (strcmp(extension, "bmp") == 0) {
         int status = stbi_write_bmp(filename, w, h, comp, result.data);
         if (!status) {
-            return error(env, "unsuccesful attempt to write to bmp");
+            return error(env, "filed to write bmp");
         }
     } else if (strcmp(extension, "tga") == 0) {
         int status = stbi_write_tga(filename, w, h, comp, result.data);
         if (!status) {
-            return error(env, "unsuccesful attempt to write to tga");
+            return error(env, "filed to write tga");
         }
     } else if (strcmp(extension, "jpg") == 0) {
         int quality = 100;
         int status = stbi_write_jpg(filename, w, h, comp, result.data, quality);
         if (!status) {
-            return error(env, "unsuccesful attempt to write to jpg");
+            return error(env, "filed to write jpg");
         }
     } else {
         return error(env, "wrong extension");
     }
 
     return enif_make_atom(env, "ok");
+}
+
+typedef struct WriteChunk {
+    struct WriteChunk *next;
+    void *data;
+    size_t size;
+} WriteChunk;
+
+typedef struct {
+    WriteChunk *head;
+    WriteChunk *last;
+    size_t size;
+    bool out_of_memory;
+} WriteContext;
+
+static void write_chunk(void *context_, void *data, int size) {
+    WriteContext *context = (WriteContext *) context_;
+
+    if (context->out_of_memory) {
+        return;
+    }
+
+    WriteChunk *chunk = enif_alloc(sizeof(WriteChunk));
+    void *chunk_data = enif_alloc(size);
+
+    if (chunk == NULL || chunk_data == NULL) {
+        free(chunk);
+        free(chunk_data);
+        context->out_of_memory = true;
+        return;
+    }
+
+    memcpy(chunk_data, data, size);
+
+    chunk->next = NULL;
+    chunk->data = chunk_data;
+    chunk->size = size;
+
+    if (context->head == NULL) {
+        context->head = context->last = chunk;
+    } else {
+        context->last->next = chunk;
+        context->last = chunk;
+    }
+
+    context->size += size;
+}
+
+static void finalize_write(WriteContext *context, ErlNifEnv *env, ERL_NIF_TERM *result) {
+    if (!context->out_of_memory) {
+        void *buffer = enif_make_new_binary(env, context->size, result);
+
+        if (buffer == NULL) {
+            context->out_of_memory = true;
+        } else {
+            for (WriteChunk *chunk = context->head; chunk != NULL; chunk = chunk->next) {
+                memcpy(buffer, chunk->data, chunk->size);
+                buffer += chunk->size;
+            }
+        }
+    }
+
+    WriteChunk *chunk = context->head;
+    WriteChunk *next = NULL;
+
+    while (chunk != NULL) {
+        next = chunk->next;
+        enif_free(chunk->data);
+        enif_free(chunk);
+        chunk = next;
+    }
+}
+
+static ERL_NIF_TERM to_memory(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+    if (argc != 5) {
+        return error(env, "expecting 5 arguments: extension, data, height, width, and number of channels");
+    }
+
+    char extension[MAX_EXTNAME_LENGTH];
+    ErlNifBinary img;
+    int w, h, comp;
+
+    if (!enif_get_atom(env, argv[0], extension, sizeof(extension), ERL_NIF_LATIN1)) {
+        return error(env, "invalid extension");
+    }
+    if (!enif_inspect_binary(env, argv[1], &img)) {
+        return error(env, "invalid binary data");
+    }
+    if (!enif_get_int(env, argv[2], &h)) {
+        return error(env, "invalid height");
+    }
+    if (!enif_get_int(env, argv[3], &w)) {
+        return error(env, "invalid width");
+    }
+    if (!enif_get_int(env, argv[4], &comp)) {
+        return error(env, "invalid number of channels");
+    }
+
+    // The write_chunk function is called multiple times with subsequent
+    // data chunks, we create a list of those and join afterwards
+    WriteContext context = { .head = NULL, .last = NULL, .size = 0, .out_of_memory = false };
+    ERL_NIF_TERM result;
+
+    if (strcmp(extension, "png") == 0) {
+        int stride_in_bytes = 0;
+        int status = stbi_write_png_to_func(write_chunk, (void*) &context, w, h, comp, img.data, stride_in_bytes);
+        finalize_write(&context, env, &result);
+        if (!status) {
+            return error(env, "filed to write png");
+        }
+    } else if (strcmp(extension, "bmp") == 0) {
+        int status = stbi_write_bmp_to_func(write_chunk, (void*) &context, w, h, comp, img.data);
+        finalize_write(&context, env, &result);
+        if (!status) {
+            return error(env, "filed to write bmp");
+        }
+    } else if (strcmp(extension, "tga") == 0) {
+        int status = stbi_write_tga_to_func(write_chunk, (void*) &context, w, h, comp, img.data);
+        finalize_write(&context, env, &result);
+        if (!status) {
+            return error(env, "filed to write tga");
+        }
+    } else if (strcmp(extension, "jpg") == 0) {
+        int quality = 100;
+        int status = stbi_write_jpg_to_func(write_chunk, (void*) &context, w, h, comp, img.data, quality);
+        finalize_write(&context, env, &result);
+        if (!status) {
+            return error(env, "filed to write jpg");
+        }
+    } else {
+        return error(env, "wrong extension");
+    }
+
+    if (context.out_of_memory) {
+        return error(env, "out of memory");
+    }
+
+    return enif_make_tuple2(env, enif_make_atom(env, "ok"), result);
 }
 
 static int on_load(ErlNifEnv *env, void **_sth1, ERL_NIF_TERM _sth2) {
@@ -275,7 +417,8 @@ static ErlNifFunc nif_functions[] = {
     {"from_file", 3, from_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"from_memory", 3, from_memory, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"gif_from_memory", 1, gif_from_memory, ERL_NIF_DIRTY_JOB_CPU_BOUND},
-    {"to_file", 6, to_file, ERL_NIF_DIRTY_JOB_IO_BOUND}};
+    {"to_file", 6, to_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"to_memory", 5, to_memory, ERL_NIF_DIRTY_JOB_CPU_BOUND}};
 
 ERL_NIF_INIT(Elixir.StbImage.Nif, nif_functions, on_load, on_reload, on_upgrade, NULL);
 

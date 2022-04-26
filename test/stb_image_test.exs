@@ -88,10 +88,10 @@ defmodule StbImageTest do
              [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]
   end
 
-  for ext <- ~w(bmp png tga jpg) do
+  for ext <- ~w(bmp png tga jpg)a do
     @ext ext
 
-    test "save image #{@ext}" do
+    test "save image #{@ext} to file" do
       read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
       {:ok, img, {height, width, num_channels}, _, _} = read
       save_at = "tmp/save_test.#{@ext}"
@@ -103,6 +103,14 @@ defmodule StbImageTest do
       after
         File.rm!(save_at)
       end
+    end
+
+    test "encode image as #{@ext} in memory" do
+      {:ok, img, {height, width, num_channels}, _, _} =
+        read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
+
+      {:ok, encoded} = StbImage.to_memory(@ext, img, height, width, num_channels)
+      assert StbImage.from_memory(encoded) == read
     end
   end
 end

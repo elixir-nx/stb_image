@@ -16,4 +16,5 @@ defmodule StbImage.Nif do
   def from_memory(_buffer, _desired_channels, _type), do: :erlang.nif_error(:not_loaded)
   def gif_from_memory(_gif_filename), do: :erlang.nif_error(:not_loaded)
   def to_file(_filename, _extension, _data, _width, _height, _channels), do: :erlang.nif_error(:not_loaded)
+  def to_memory(_extension, _data, _width, _height, _channels), do: :erlang.nif_error(:not_loaded)
 end

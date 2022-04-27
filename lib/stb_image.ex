@@ -39,9 +39,9 @@ defmodule StbImage do
       data = img.data
 
       # If you know the image is a 4-channel image and auto-detection failed
-      stb_image_struct = StbImage.from_file("/path/to/image", channels: 4)
-      {h, w, c} = stb_image_struct.shape
-      img = stb_image_struct.data
+      img = StbImage.from_file("/path/to/image", channels: 4)
+      {h, w, c} = img.shape
+      img = img.data
 
   """
   def from_file(path, opts \\ []) when is_path(path) and is_list(opts) do
@@ -66,14 +66,14 @@ defmodule StbImage do
   ## Example
 
       {:ok, buffer} = File.read("/path/to/image")
-      stb_image_struct = StbImage.from_binary(buffer)
-      {h, w, c} = stb_image_struct.shape
-      img = stb_image_struct.data
+      img = StbImage.from_binary(buffer)
+      {h, w, c} = img.shape
+      img = img.data
 
       # If you know the image is a 4-channel image and auto-detection failed
-      stb_image_struct = StbImage.from_file("/path/to/image", channels: 4)
-      {h, w, c} = stb_image_struct.shape
-      img = stb_image_struct.data
+      img = StbImage.from_file("/path/to/image", channels: 4)
+      {h, w, c} = img.shape
+      img = img.data
 
   """
   def from_binary(buffer, opts \\ []) when is_binary(buffer) and is_list(opts) do

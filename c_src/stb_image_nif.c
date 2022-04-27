@@ -151,7 +151,6 @@ static ERL_NIF_TERM gif_from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
         ERL_NIF_TERM *delays_term = (ERL_NIF_TERM *)malloc(sizeof(ERL_NIF_TERM) * z);
         ERL_NIF_TERM *frames_term = (ERL_NIF_TERM *)malloc(sizeof(ERL_NIF_TERM) * z);
         ErlNifBinary *frames_result = (ErlNifBinary *)malloc(sizeof(ErlNifBinary) * z);
-
         bool ok = true;
         unsigned char *start = data;
         size_t offset = x * y * sizeof(unsigned char);

@@ -16,8 +16,8 @@ defmodule StbImage.Nif do
   def from_binary(_buffer, _desired_channels, _type), do: :erlang.nif_error(:not_loaded)
   def gif_from_binary(_gif_path), do: :erlang.nif_error(:not_loaded)
 
-  def to_file(_path, _extension, _data, _width, _height, _channels),
+  def to_file(_path, _format, _data, _width, _height, _channels),
     do: :erlang.nif_error(:not_loaded)
 
-  def to_binary(_extension, _data, _width, _height, _channels), do: :erlang.nif_error(:not_loaded)
+  def to_binary(_format, _data, _width, _height, _channels), do: :erlang.nif_error(:not_loaded)
 end

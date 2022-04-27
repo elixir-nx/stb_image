@@ -17,157 +17,190 @@ defmodule StbImage do
   There are also specific functions for working with GIFs.
   """
 
-  @types [:u8, :u16, :f32]
+  defguardp is_path(path) when is_binary(path) or is_list(path)
 
-  @doc """
-  Decode image from a given file
-
-  - `filename`. Path to the image.
-
-  ## Example
-
-      {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image")
-      {h, w, c} = shape
-
-  """
-  def from_file(filename), do: from_file(filename, 0, :u8)
-
-  @doc """
-  Decode image from a given file
-
-  - `filename`. Path to the image.
-  - `desired_channels`. `0` for auto-detection. Otherwise, the number of desired channels.
-
-  ## Example
-
-      # if you know the image is a 4-channel image and auto-detection failed
-      {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image", 4)
-      {h, w, c} = shape
-
-  """
-  def from_file(filename, desired_channels) do
-    from_file(filename, desired_channels, :u8)
+  defmodule StbImageWrapper do
+    defstruct [:data, :shape, :type, :color_mode]
   end
 
   @doc """
-  Decode image from a given file
+  Decodes image from file at `path`.
 
-  - `filename`. Path to the image.
-  - `desired_channels`. `0` for auto-detection. Otherwise, the number of desired channels.
-  - `type`. Specify format for each channel. `:u8`, `:u16` or `:f32`.
+  ## Options
+
+    * `:channels` - The number of desired channels.
+      Use `0` for auto-detection. Defaults to 0.
+
+    * `:type` - The type of the data. Defaults to `:u8`.
+      Must be one of `:u8`, `:u16`, `:f32`.
 
   ## Example
 
-      # Use 0 for auto-detecting number of channels
-      # but specify each channel is in float (32-bit)
-      {:ok, img, shape, type, channels} = StbImage.from_file("/path/to/image", 0, :f32)
-      {h, w, c} = shape
+      stb_image_struct = StbImage.from_file("/path/to/image")
+      {h, w, c} = stb_image_struct.shape
+      img = stb_image_struct.data
+
+      # If you know the image is a 4-channel image and auto-detection failed
+      stb_image_struct = StbImage.from_file("/path/to/image", channels: 4)
+      {h, w, c} = stb_image_struct.shape
+      img = stb_image_struct.data
 
   """
-  def from_file(filename, desired_channels, type)
-      when (is_binary(filename) or is_list(filename)) and is_integer(desired_channels) and desired_channels >= 0 and
-             type in @types do
-    filename = if is_binary(filename), do: String.to_charlist(filename), else: filename
-    StbImage.Nif.from_file(filename, desired_channels, type)
+  def from_file(path, opts \\ []) when is_path(path) and is_list(opts) do
+    type = opts[:type] || :u8
+    channels = opts[:channels] || 0
+    {:ok, img, shape, type, channels} = StbImage.Nif.from_file(path_to_charlist(path), channels, type)
+    {:ok, %StbImageWrapper{data: img, shape: shape, type: type, color_mode: channels}}
   end
 
   @doc """
-  Decode image from buffer in memory
+  Decodes image from `binary`.
 
-  - `buffer`. Buffered raw file data in memory.
+  ## Options
+
+    * `:channels` - The number of desired channels.
+      Use `0` for auto-detection. Defaults to 0.
+
+    * `:type` - The type of the data. Defaults to `:u8`.
+      Must be one of `:u8`, `:u16`, `:f32`.
 
   ## Example
 
-      # image buffer from a file or perhaps download from Internet
       {:ok, buffer} = File.read("/path/to/image")
-      # decode the image from memory
-      {:ok, img, shape, type, channels} = StbImage.from_memory(buffer)
-      {h, w, c} = shape
+      stb_image_struct = StbImage.from_binary(buffer)
+      {h, w, c} = stb_image_struct.shape
+      img = stb_image_struct.data
+
+      # If you know the image is a 4-channel image and auto-detection failed
+      stb_image_struct = StbImage.from_file("/path/to/image", channels: 4)
+      {h, w, c} = stb_image_struct.shape
+      img = stb_image_struct.data
 
   """
-  def from_memory(buffer), do: from_memory(buffer, 0, :u8)
-
-  @doc """
-  Decode image from buffer in memory
-
-  - `buffer`. Buffered raw file data in memory.
-  - `desired_channels`. `0` for auto-detection. Otherwise, the number of desired channels.
-
-  ## Example
-
-      # image buffer from a file or perhaps download from Internet
-      {:ok, buffer} = File.read("/path/to/image")
-      # decode the image from memory
-      # and specify it is a 4-channel image
-      {:ok, img, shape, type, channels} = StbImage.from_memory(buffer, 4)
-      {h, w, c} = shape
-
-  """
-  def from_memory(buffer, desired_channels) do
-    from_memory(buffer, desired_channels, :u8)
+  def from_binary(buffer, opts \\ []) when is_binary(buffer) and is_list(opts) do
+    type = opts[:type] || :u8
+    channels = opts[:channels] || 0
+    {:ok, img, shape, type, channels} = StbImage.Nif.from_binary(buffer, channels, type)
+    {:ok, %StbImageWrapper{data: img, shape: shape, type: type, color_mode: channels}}
   end
 
   @doc """
-  Decode image from buffer in memory
-
-  - `buffer`. Buffered raw file data in memory.
-  - `desired_channels`. `0` for auto-detection. Otherwise, the number of desired channels.
-  - `type`. Specify format for each channel. `:u8`, `:u16` or `:f32`.
+  Decodes GIF image from file at `path`.
 
   ## Example
 
-      # image buffer from a file or perhaps download from Internet
-      {:ok, buffer} = File.read("/path/to/image")
-      # decode the image from memory
-      # and specify it is a 3-channel image and each channel is in uint8_t
-      {:ok, img, shape, type, channels} = StbImage.from_memory(buffer, 3, :u8)
-      {h, w, c} = shape
+      {:ok, frames, delays} = StbImage.gif_from_file("/path/to/image")
+      frame = Enum.at(frames, 0)
+      {h, w, 3} = frame.shape
 
-  """
-  def from_memory(buffer, desired_channels, type)
-      when is_binary(buffer) and is_integer(desired_channels) and desired_channels >= 0 and
-             type in @types do
-    StbImage.Nif.from_memory(buffer, desired_channels, type)
-  end
-
-  @doc """
-  Decode GIF image from a given file
-
-  - `filename`. Path to the GIF image.
-
-  ## Example
-
-      {:ok, frames, shape, delays} = StbImage.gif_from_file("/path/to/image")
-      {h, w, 3} = shape
       # GIFs always have channels == :rgb and type == :u8
       # delays is a list that has n elements, where n is the number of frames
 
   """
-  def gif_from_file(filename) do
-    with {:ok, buffer} <- File.read(filename) do
-      gif_from_memory(buffer)
+  def gif_from_file(path) when is_binary(path) or is_list(path) do
+    with {:ok, binary} <- File.read(path) do
+      gif_from_binary(binary)
     end
   end
 
   @doc """
-  Decode image from buffer in memory
-
-  - `buffer`. Path to the image.
+  Decodes GIF image from `binary`.
 
   ## Example
 
       {:ok, buffer} = File.read("/path/to/image")
-      {:ok, frames, shape, delays} = StbImage.gif_from_memory(buffer)
-      {h, w, 3} = shape
+      {:ok, frames, delays} = StbImage.gif_from_binary(buffer)
+      frame = Enum.at(frames, 0)
+      {h, w, 3} = frame.shape
+
+      # GIFs always have channels == :rgb and type == :u8
       # delays is a list that has n elements, where n is the number of frames
 
   """
-  def gif_from_memory(buffer), do: StbImage.Nif.gif_from_memory(buffer)
-
-  def to_file(filename, extension, data, width, height, channels)
-    when extension in ~w(jpg png bmp tga) and is_bitstring(data) and is_integer(width) and is_integer(height) and is_integer(channels) do
-    filename = if is_binary(filename), do: String.to_charlist(filename), else: filename
-    extension = String.to_charlist(extension)
-    StbImage.Nif.to_file(filename, extension, data, width, height, channels)
+  def gif_from_binary(binary) when is_binary(binary) do
+    {:ok, frames, shape, delays} = StbImage.Nif.gif_from_binary(binary)
+    stb_frames = for i <- 0..(Enum.count(frames)-1), do: %StbImageWrapper{data: Enum.at(frames, i), shape: shape, type: :u8, color_mode: :rgb}
+    {:ok, stb_frames, delays}
   end
+
+  @encoding_formats ~w(jpg png bmp tga)a
+  @encoding_formats_string Enum.map_join(@encoding_formats, ", ", &inspect/1)
+
+  @doc """
+  Saves image to the file at `path`.
+
+  The supported formats are #{@encoding_formats_string}.
+
+  The format is determined from the file extension if possible,
+  you can also pass it explicitly via the `:format` option.
+
+  Returns `:ok` on success and `{:error, reason}` otherwise.
+
+  Make sure the directory you intent to write the file to exists,
+  otherwise an error is returned.
+
+  ## Options
+
+    * `:format` - one of the supported image formats
+
+  """
+  def to_file(path, data, height, width, channels, opts \\ [])
+      when is_path(path) and is_binary(data) and is_integer(width) and width > 0 and
+             is_integer(height) and height > 0 and is_integer(channels) and channels > 0 and
+             is_list(opts) do
+    format = opts[:format] || format_from_path!(path)
+    assert_encoding_format!(format)
+    StbImage.Nif.to_file(path_to_charlist(path), format, data, height, width, channels)
+  end
+
+  @doc """
+  Encodes image to a binary.
+
+  The supported formats are #{@encoding_formats_string}.
+
+  ## Example
+
+      {:ok, binary} = StbImage.to_binary(:png, img, height, width, channels)
+
+  """
+  def to_binary(format, data, height, width, channels)
+      when is_atom(format) and is_binary(data) and is_integer(width) and width > 0 and
+             is_integer(height) and height > 0 and is_integer(channels) and channels > 0 do
+    assert_encoding_format!(format)
+    StbImage.Nif.to_binary(format, data, height, width, channels)
+  end
+
+  defp format_from_path!(path) do
+    case Path.extname(path) do
+      ".jpg" ->
+        :jpg
+
+      ".jpeg" ->
+        :jpg
+
+      ".png" ->
+        :png
+
+      ".bmp" ->
+        :bmp
+
+      ".tga" ->
+        :tga
+
+      ext ->
+        raise "could not determine a supported encoding format for file #{inspect(path)} with extension #{inspect(ext)}, " <>
+                "please specify a supported :format option explicitly"
+    end
+  end
+
+  defp assert_encoding_format!(format) do
+    unless format in @encoding_formats do
+      raise ArgumentError,
+            "got an unsupported encoding format #{inspect(format)}, " <>
+              "the format must be one of #{inspect(@encoding_formats)}"
+    end
+  end
+
+  defp path_to_charlist(path) when is_list(path), do: path
+  defp path_to_charlist(path) when is_binary(path), do: String.to_charlist(path)
 end

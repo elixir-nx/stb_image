@@ -19,9 +19,7 @@ defmodule StbImage do
 
   defguardp is_path(path) when is_binary(path) or is_list(path)
 
-  defmodule StbImageWrapper do
-    defstruct [:data, :shape, :type, :color_mode]
-  end
+  defstruct [:data, :shape, :type, :color_mode]
 
   @doc """
   Decodes image from file at `path`.
@@ -36,9 +34,9 @@ defmodule StbImage do
 
   ## Example
 
-      stb_image_struct = StbImage.from_file("/path/to/image")
-      {h, w, c} = stb_image_struct.shape
-      img = stb_image_struct.data
+      img = StbImage.from_file("/path/to/image")
+      {h, w, c} = img.shape
+      data = img.data
 
       # If you know the image is a 4-channel image and auto-detection failed
       stb_image_struct = StbImage.from_file("/path/to/image", channels: 4)
@@ -119,7 +117,7 @@ defmodule StbImage do
   """
   def gif_from_binary(binary) when is_binary(binary) do
     {:ok, frames, shape, delays} = StbImage.Nif.gif_from_binary(binary)
-    stb_frames = for i <- 0..(Enum.count(frames)-1), do: %StbImageWrapper{data: Enum.at(frames, i), shape: shape, type: :u8, color_mode: :rgb}
+    stb_frames = for frame <- frames, do: %StbImage{data: frame, shape: shape, type: :u8, color_mode: :rgb}
     {:ok, stb_frames, delays}
   end
 

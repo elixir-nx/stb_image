@@ -15,8 +15,7 @@ defmodule StbImageTest do
   end
 
   test "decode as u16" do
-    {:ok, img} =
-      StbImage.from_file(Path.join(__DIR__, "test.png"), type: :u16)
+    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"), type: :u16)
 
     assert img.type == :u16
     assert img.shape == {2, 3, 4}
@@ -28,8 +27,7 @@ defmodule StbImageTest do
   end
 
   test "decode as f32" do
-    {:ok, img} =
-      StbImage.from_file(Path.join(__DIR__, "test.png"), type: :f32)
+    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"), type: :f32)
 
     assert img.type == :f32
     assert img.shape == {2, 3, 4}
@@ -85,7 +83,7 @@ defmodule StbImageTest do
     assert 2 == Enum.count(frames)
     assert delays == [200, 200]
 
-    assert [Enum.at(frames, 0).data, Enum.at(frames, 1).data]  ==
+    assert [Enum.at(frames, 0).data, Enum.at(frames, 1).data] ==
              [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]
   end
 

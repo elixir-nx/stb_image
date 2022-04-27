@@ -47,8 +47,9 @@ defmodule StbImage do
   def from_file(path, opts \\ []) when is_path(path) and is_list(opts) do
     type = opts[:type] || :u8
     channels = opts[:channels] || 0
-    {:ok, img, shape, type, channels} = StbImage.Nif.from_file(path_to_charlist(path), channels, type)
-    {:ok, %StbImage{data: img, shape: shape, type: type, color_mode: channels}}
+    with {:ok, img, shape, type, channels} <- StbImage.Nif.from_file(path_to_charlist(path), channels, type) do
+      {:ok, %StbImage{data: img, shape: shape, type: type, color_mode: channels}}
+    end
   end
 
   @doc """

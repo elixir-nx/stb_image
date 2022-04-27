@@ -145,7 +145,7 @@ defmodule StbImage do
     * `:format` - one of the supported image formats
 
   """
-  def to_file(path, %StbImage{data: data, shape: {height, width, channels}}, opts \\ []) do
+  def to_file(%StbImage{data: data, shape: {height, width, channels}}, path, opts \\ []) do
     format = opts[:format] || format_from_path!(path)
     assert_encoding_format!(format)
     StbImage.Nif.to_file(path_to_charlist(path), format, data, height, width, channels)
@@ -161,7 +161,7 @@ defmodule StbImage do
       {:ok, binary} = StbImage.to_binary(:png, img, height, width, channels)
 
   """
-  def to_binary(format, %StbImage{data: data, shape: {height, width, channels}}) do
+  def to_binary(%StbImage{data: data, shape: {height, width, channels}}, format) do
     assert_encoding_format!(format)
     StbImage.Nif.to_binary(format, data, height, width, channels)
   end

@@ -99,7 +99,7 @@ defmodule StbImageTest do
 
       try do
         File.mkdir_p!("tmp")
-        :ok = StbImage.to_file(save_at, stb_image_struct)
+        :ok = StbImage.to_file(stb_image_struct, save_at)
         assert StbImage.from_file(save_at) == read
       after
         File.rm!(save_at)
@@ -110,7 +110,7 @@ defmodule StbImageTest do
       read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
       {:ok, stb_image_struct} = read
 
-      {:ok, encoded} = StbImage.to_binary(@ext, stb_image_struct)
+      {:ok, encoded} = StbImage.to_binary(stb_image_struct, @ext)
       assert StbImage.from_binary(encoded) == read
     end
   end

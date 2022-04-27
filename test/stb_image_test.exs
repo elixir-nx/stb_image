@@ -95,13 +95,11 @@ defmodule StbImageTest do
     test "save image #{@ext} to file" do
       read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
       {:ok, stb_image_struct} = read
-      img = stb_image_struct.data
-      {height, width, num_channels} = stb_image_struct.shape
       save_at = "tmp/save_test.#{@ext}"
 
       try do
         File.mkdir_p!("tmp")
-        :ok = StbImage.to_file(save_at, img, height, width, num_channels)
+        :ok = StbImage.to_file(save_at, stb_image_struct)
         assert StbImage.from_file(save_at) == read
       after
         File.rm!(save_at)
@@ -109,12 +107,10 @@ defmodule StbImageTest do
     end
 
     test "encode image as #{@ext} in memory" do
-        read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
-        {:ok, stb_image_struct} = read
-        img = stb_image_struct.data
-        {height, width, num_channels} = stb_image_struct.shape
+      read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
+      {:ok, stb_image_struct} = read
 
-      {:ok, encoded} = StbImage.to_binary(@ext, img, height, width, num_channels)
+      {:ok, encoded} = StbImage.to_binary(@ext, stb_image_struct)
       assert StbImage.from_binary(encoded) == read
     end
   end

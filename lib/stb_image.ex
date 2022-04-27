@@ -48,7 +48,7 @@ defmodule StbImage do
     type = opts[:type] || :u8
     channels = opts[:channels] || 0
     {:ok, img, shape, type, channels} = StbImage.Nif.from_file(path_to_charlist(path), channels, type)
-    {:ok, %StbImageWrapper{data: img, shape: shape, type: type, color_mode: channels}}
+    {:ok, %StbImage{data: img, shape: shape, type: type, color_mode: channels}}
   end
 
   @doc """
@@ -78,8 +78,9 @@ defmodule StbImage do
   def from_binary(buffer, opts \\ []) when is_binary(buffer) and is_list(opts) do
     type = opts[:type] || :u8
     channels = opts[:channels] || 0
-    {:ok, img, shape, type, channels} = StbImage.Nif.from_binary(buffer, channels, type)
-    {:ok, %StbImageWrapper{data: img, shape: shape, type: type, color_mode: channels}}
+    with {:ok, img, shape, type, channels} <- StbImage.Nif.from_binary(buffer, channels, type) do
+      {:ok, %StbImage{data: img, shape: shape, type: type, color_mode: channels}}
+    end
   end
 
   @doc """
@@ -116,9 +117,10 @@ defmodule StbImage do
 
   """
   def gif_from_binary(binary) when is_binary(binary) do
-    {:ok, frames, shape, delays} = StbImage.Nif.gif_from_binary(binary)
-    stb_frames = for frame <- frames, do: %StbImage{data: frame, shape: shape, type: :u8, color_mode: :rgb}
-    {:ok, stb_frames, delays}
+    with {:ok, frames, shape, delays} = StbImage.Nif.gif_from_binary(binary) do
+      stb_frames = for frame <- frames, do: %StbImage{data: frame, shape: shape, type: :u8, color_mode: :rgb}
+      {:ok, stb_frames, delays}
+    end
   end
 
   @encoding_formats ~w(jpg png bmp tga)a
@@ -142,10 +144,9 @@ defmodule StbImage do
     * `:format` - one of the supported image formats
 
   """
-  def to_file(path, data, height, width, channels, opts \\ [])
-      when is_path(path) and is_binary(data) and is_integer(width) and width > 0 and
-             is_integer(height) and height > 0 and is_integer(channels) and channels > 0 and
-             is_list(opts) do
+  def to_file(path, stb_image_struct, opts \\ []) do
+    data = stb_image_struct.data
+    {height, width, channels} = stb_image_struct.shape
     format = opts[:format] || format_from_path!(path)
     assert_encoding_format!(format)
     StbImage.Nif.to_file(path_to_charlist(path), format, data, height, width, channels)
@@ -161,10 +162,10 @@ defmodule StbImage do
       {:ok, binary} = StbImage.to_binary(:png, img, height, width, channels)
 
   """
-  def to_binary(format, data, height, width, channels)
-      when is_atom(format) and is_binary(data) and is_integer(width) and width > 0 and
-             is_integer(height) and height > 0 and is_integer(channels) and channels > 0 do
+  def to_binary(format, stb_image_struct) do
     assert_encoding_format!(format)
+    data = stb_image_struct.data
+    {height, width, channels} = stb_image_struct.shape
     StbImage.Nif.to_binary(format, data, height, width, channels)
   end
 
@@ -201,4 +202,5 @@ defmodule StbImage do
 
   defp path_to_charlist(path) when is_list(path), do: path
   defp path_to_charlist(path) when is_binary(path), do: String.to_charlist(path)
+
 end

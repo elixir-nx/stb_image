@@ -55,8 +55,8 @@ defmodule StbImageTest do
   end
 
   test "decode png from memory" do
-    {:ok, buffer} = File.read(Path.join(__DIR__, "test.png"))
-    {:ok, img, shape, type, channels} = StbImage.from_memory(buffer)
+    {:ok, binary} = File.read(Path.join(__DIR__, "test.png"))
+    {:ok, img, shape, type, channels} = StbImage.from_binary(binary)
     assert type == :u8
     assert shape == {2, 3, 4}
     assert channels == :rgba
@@ -67,8 +67,8 @@ defmodule StbImageTest do
   end
 
   test "decode jpg from memory" do
-    {:ok, buffer} = File.read(Path.join(__DIR__, "test.jpg"))
-    {:ok, img, shape, type, channels} = StbImage.from_memory(buffer)
+    {:ok, binary} = File.read(Path.join(__DIR__, "test.jpg"))
+    {:ok, img, shape, type, channels} = StbImage.from_binary(binary)
     assert type == :u8
     assert shape == {2, 3, 3}
     assert channels == :rgb
@@ -109,8 +109,8 @@ defmodule StbImageTest do
       {:ok, img, {height, width, num_channels}, _, _} =
         read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
 
-      {:ok, encoded} = StbImage.to_memory(@ext, img, height, width, num_channels)
-      assert StbImage.from_memory(encoded) == read
+      {:ok, encoded} = StbImage.to_binary(@ext, img, height, width, num_channels)
+      assert StbImage.from_binary(encoded) == read
     end
   end
 end

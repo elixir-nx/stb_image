@@ -45,12 +45,12 @@ defmodule StbImage do
 
   ## Example
 
-      img = StbImage.from_file("/path/to/image")
+      {:ok, img} = StbImage.from_file("/path/to/image")
       {h, w, c} = img.shape
       data = img.data
 
       # If you know the image is a 4-channel image and auto-detection failed
-      img = StbImage.from_file("/path/to/image", channels: 4)
+      {:ok, img} = StbImage.from_file("/path/to/image", channels: 4)
       {h, w, c} = img.shape
       img = img.data
 
@@ -79,12 +79,12 @@ defmodule StbImage do
   ## Example
 
       {:ok, buffer} = File.read("/path/to/image")
-      img = StbImage.from_binary(buffer)
+      {:ok, img} = StbImage.from_binary(buffer)
       {h, w, c} = img.shape
       img = img.data
 
       # If you know the image is a 4-channel image and auto-detection failed
-      img = StbImage.from_file("/path/to/image", channels: 4)
+      {:ok, img} = StbImage.from_file("/path/to/image", channels: 4)
       {h, w, c} = img.shape
       img = img.data
 
@@ -173,8 +173,8 @@ defmodule StbImage do
   The supported formats are #{@encoding_formats_string}.
 
   ## Example
-
-      {:ok, binary} = StbImage.to_binary(:png, img, height, width, channels)
+      img = %StbImage{data: raw_img, shape: {h, w, channels}, type: :u8, color_mode: :rgba}
+      {:ok, binary} = StbImage.to_binary(img, :png)
 
   """
   def to_binary(%StbImage{data: data, shape: {height, width, channels}}, format) do

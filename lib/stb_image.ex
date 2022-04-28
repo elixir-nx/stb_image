@@ -173,8 +173,8 @@ defmodule StbImage do
   The supported formats are #{@encoding_formats_string}.
 
   ## Example
-
-      {:ok, binary} = StbImage.to_binary(:png, img, height, width, channels)
+      img = %StbImage{data: raw_img, shape: {h, w, channels}, type: :u8, color_mode: :rgba}
+      {:ok, binary} = StbImage.to_binary(img, :png)
 
   """
   def to_binary(%StbImage{data: data, shape: {height, width, channels}}, format) do

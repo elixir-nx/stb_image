@@ -15,7 +15,7 @@ defmodule StbImageTest do
 
     assert StbImage.new(img.data, img.shape) == img
     assert StbImage.new(img.data, img.shape, type: :u8) == img
-    assert StbImage.new(img.data, img.shape, type: {:u, 8}) == img
+    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
   end
 
   test "decode as u16" do
@@ -31,7 +31,7 @@ defmodule StbImageTest do
                205, 205, 145, 145, 255, 255, 144, 144, 184, 184, 200, 200, 255, 255>>
 
     assert StbImage.new(img.data, img.shape, type: :u16) == img
-    assert StbImage.new(img.data, img.shape, type: {:u, 16}) == img
+    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
   end
 
   test "decode as f32" do
@@ -49,7 +49,7 @@ defmodule StbImageTest do
                145, 62, 93, 188, 249, 62, 84, 2, 22, 63, 0, 0, 128, 63>>
 
     assert StbImage.new(img.data, img.shape, type: :f32) == img
-    assert StbImage.new(img.data, img.shape, type: {:f, 32}) == img
+    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
   end
 
   test "decode jpg from file" do
@@ -63,6 +63,7 @@ defmodule StbImageTest do
                124>>
 
     assert StbImage.new(img.data, img.shape) == img
+    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
   end
 
   test "decode png from memory" do
@@ -77,6 +78,7 @@ defmodule StbImageTest do
                205, 145, 255, 144, 184, 200, 255>>
 
     assert StbImage.new(img.data, img.shape) == img
+    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
   end
 
   test "decode jpg from memory" do
@@ -91,6 +93,7 @@ defmodule StbImageTest do
                124>>
 
     assert StbImage.new(img.data, img.shape) == img
+    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
   end
 
   test "decode gif" do

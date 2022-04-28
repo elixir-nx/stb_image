@@ -19,6 +19,17 @@ defmodule StbImage do
 
   defguardp is_path(path) when is_binary(path) or is_list(path)
 
+  @doc """
+  The `StbImage` struct.
+
+  It has the following fields:
+
+    * `:data` - a binary
+    * `:shape` - a tuple with the `{height, width, channels}`
+    * `:type` - the type unit in the binary (u8/u16/f32)
+    * `:color_mode` - the color mode as `:l`, `:la`, `:rgb`, or `:rgba`
+
+  """
   defstruct [:data, :shape, :type, :color_mode]
 
   @doc """
@@ -34,12 +45,12 @@ defmodule StbImage do
 
   ## Example
 
-      img = StbImage.from_file("/path/to/image")
+      {:ok, img} = StbImage.from_file("/path/to/image")
       {h, w, c} = img.shape
       data = img.data
 
       # If you know the image is a 4-channel image and auto-detection failed
-      img = StbImage.from_file("/path/to/image", channels: 4)
+      {:ok, img} = StbImage.from_file("/path/to/image", channels: 4)
       {h, w, c} = img.shape
       img = img.data
 
@@ -47,7 +58,9 @@ defmodule StbImage do
   def from_file(path, opts \\ []) when is_path(path) and is_list(opts) do
     type = opts[:type] || :u8
     channels = opts[:channels] || 0
-    with {:ok, img, shape, type, channels} <- StbImage.Nif.from_file(path_to_charlist(path), channels, type) do
+
+    with {:ok, img, shape, type, channels} <-
+           StbImage.Nif.from_file(path_to_charlist(path), channels, type) do
       {:ok, %StbImage{data: img, shape: shape, type: type, color_mode: channels}}
     end
   end
@@ -66,12 +79,12 @@ defmodule StbImage do
   ## Example
 
       {:ok, buffer} = File.read("/path/to/image")
-      img = StbImage.from_binary(buffer)
+      {:ok, img} = StbImage.from_binary(buffer)
       {h, w, c} = img.shape
       img = img.data
 
       # If you know the image is a 4-channel image and auto-detection failed
-      img = StbImage.from_file("/path/to/image", channels: 4)
+      {:ok, img} = StbImage.from_file("/path/to/image", channels: 4)
       {h, w, c} = img.shape
       img = img.data
 
@@ -79,6 +92,7 @@ defmodule StbImage do
   def from_binary(buffer, opts \\ []) when is_binary(buffer) and is_list(opts) do
     type = opts[:type] || :u8
     channels = opts[:channels] || 0
+
     with {:ok, img, shape, type, channels} <- StbImage.Nif.from_binary(buffer, channels, type) do
       {:ok, %StbImage{data: img, shape: shape, type: type, color_mode: channels}}
     end
@@ -119,7 +133,9 @@ defmodule StbImage do
   """
   def gif_from_binary(binary) when is_binary(binary) do
     with {:ok, frames, shape, delays} <- StbImage.Nif.gif_from_binary(binary) do
-      stb_frames = for frame <- frames, do: %StbImage{data: frame, shape: shape, type: :u8, color_mode: :rgb}
+      stb_frames =
+        for frame <- frames, do: %StbImage{data: frame, shape: shape, type: :u8, color_mode: :rgb}
+
       {:ok, stb_frames, delays}
     end
   end
@@ -199,5 +215,4 @@ defmodule StbImage do
 
   defp path_to_charlist(path) when is_list(path), do: path
   defp path_to_charlist(path) when is_binary(path), do: String.to_charlist(path)
-
 end

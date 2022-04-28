@@ -39,29 +39,18 @@ defmodule StbImage do
   (heigth-width-channels) order. `shape` is a tuple
   with the `heigth`, `width`, and `channel` dimensions.
 
-  This API can be used, for example, to create a StbImage
-  from a tensor:
-
-      StbImage.new(Nx.to_binary(tensor), tensor.shape, type: tensor.type)
-
-  Alternatively, it is possible to create a tensor from an
-  image as:
-
-      Nx.from_binary(img.data, img.type) |> Nx.reshape(img.shape)
-
   ## Options
 
     * `:color_mode` - the color mode. One is automatically
       inferred from the number of channels.
 
     * `:type` - The type of the data. Defaults to `:u8`.
-      Must be one of `:u8`, `:u16`, `:f32` (or `{:u, 8}`,
-      `{:u, 16}`, `{:f, 32}` as in Nx notation).
+      Must be one of `:u8`, `:u16`, `:f32`.
 
   """
   def new(data, {h, w, c} = shape, opts \\ []) when is_binary(data) and is_integer(h) and h > 0 and is_integer(w) and w > 0  and c in 1..4 do
     color_mode = opts[:color_mode] || elem({:l, :la, :rgb, :rgba}, c - 1)
-    type = normalize_type(opts[:type] || :u8)
+    type = opts[:type] || :u8
 
     if byte_size(data) == h * w * c * bytes(type) do
       %StbImage{data: data, shape: shape, color_mode: color_mode, type: type}
@@ -70,12 +59,41 @@ defmodule StbImage do
     end
   end
 
-  defp normalize_type(type_size) when is_atom(type_size), do: type_size
-  defp normalize_type({type, size}), do: :"#{type}#{size}"
-
   defp bytes(:u8), do: 1
   defp bytes(:u16), do: 2
   defp bytes(:f32), do: 4
+
+  @compile {:no_warn_undefined, Nx}
+  @compile {:no_warn_undefined, Nx.Type}
+
+  @doc """
+  Converts a `StbImage` to a Nx tensor.
+
+  It accepts the same options as `Nx.from_binary/3`.
+  """
+  def to_nx(%StbImage{data: data, type: type, shape: shape}, opts \\ []) do
+    data
+    |> Nx.from_binary(Nx.Type.normalize!(type), opts)
+    |> Nx.reshape(shape)
+  end
+
+  @doc """
+  Creates a `StbImage` from a Nx tensor.
+
+  The tensor is expected to have shape `{h, w, c}`
+  and one of the supported types.
+  """
+  def from_nx(tensor) when is_struct(tensor, Nx.Tensor) do
+    new(Nx.to_binary(tensor), tensor_shape(Nx.shape(tensor)), type: tensor_type(Nx.type(tensor)))
+  end
+
+  defp tensor_type({:u, 8}), do: :u8
+  defp tensor_type({:u, 16}), do: :u16
+  defp tensor_type({:f, 32}), do: :f32
+  defp tensor_type(type), do: raise ArgumentError, "unsupported tensor type: #{inspect(type)}"
+
+  defp tensor_shape({_, _, _} = shape), do: shape
+  defp tensor_shape(shape), do: raise ArgumentError, "unsupported tensor shape: #{inspect(shape)}"
 
   @doc """
   Decodes image from file at `path`.
@@ -101,7 +119,7 @@ defmodule StbImage do
 
   """
   def from_file(path, opts \\ []) when is_path(path) and is_list(opts) do
-    type = normalize_type(opts[:type] || :u8)
+    type = opts[:type] || :u8
     channels = opts[:channels] || 0
 
     with {:ok, img, shape, type, channels} <-
@@ -135,7 +153,7 @@ defmodule StbImage do
 
   """
   def from_binary(buffer, opts \\ []) when is_binary(buffer) and is_list(opts) do
-    type = normalize_type(opts[:type] || :u8)
+    type = opts[:type] || :u8
     channels = opts[:channels] || 0
 
     with {:ok, img, shape, type, channels} <- StbImage.Nif.from_binary(buffer, channels, type) do

@@ -24,13 +24,58 @@ defmodule StbImage do
 
   It has the following fields:
 
-    * `:data` - a binary
+    * `:data` - a blob with the image bytes in HWC (heigth-width-channels) order
     * `:shape` - a tuple with the `{height, width, channels}`
     * `:type` - the type unit in the binary (u8/u16/f32)
     * `:color_mode` - the color mode as `:l`, `:la`, `:rgb`, or `:rgba`
 
   """
   defstruct [:data, :shape, :type, :color_mode]
+
+  @doc """
+  Creates a StbImage directly.
+
+  `data` is a binary blob with the image bytes in HWC
+  (heigth-width-channels) order. `shape` is a tuple
+  with the `heigth`, `width`, and `channel` dimensions.
+
+  This API can be used, for example, to create a StbImage
+  from a tensor:
+
+      StbImage.new(Nx.to_binary(tensor), tensor.shape, type: tensor.type)
+
+  Alternatively, it is possible to create a tensor from an
+  image as:
+
+      Nx.from_binary(img.data, img.type) |> Nx.reshape(img.shape)
+
+  ## Options
+
+    * `:color_mode` - the color mode. One is automatically
+      inferred from the number of channels.
+
+    * `:type` - The type of the data. Defaults to `:u8`.
+      Must be one of `:u8`, `:u16`, `:f32` (or `{:u, 8}`,
+      `{:u, 16}`, `{:f, 32}` as in Nx notation).
+
+  """
+  def new(data, {h, w, c} = shape, opts \\ []) when is_binary(data) and is_integer(h) and h > 0 and is_integer(w) and w > 0  and c in 1..4 do
+    color_mode = opts[:color_mode] || elem({:l, :la, :rgb, :rgba}, c - 1)
+    type = normalize_type(opts[:type] || :u8)
+
+    if byte_size(data) == h * w * c * bytes(type) do
+      %StbImage{data: data, shape: shape, color_mode: color_mode, type: type}
+    else
+      raise ArgumentError, "cannot create StbImage because number of bytes do not match shape and type"
+    end
+  end
+
+  defp normalize_type(type_size) when is_atom(type_size), do: type_size
+  defp normalize_type({type, size}), do: :"#{type}#{size}"
+
+  defp bytes(:u8), do: 1
+  defp bytes(:u16), do: 2
+  defp bytes(:f32), do: 4
 
   @doc """
   Decodes image from file at `path`.
@@ -56,7 +101,7 @@ defmodule StbImage do
 
   """
   def from_file(path, opts \\ []) when is_path(path) and is_list(opts) do
-    type = opts[:type] || :u8
+    type = normalize_type(opts[:type] || :u8)
     channels = opts[:channels] || 0
 
     with {:ok, img, shape, type, channels} <-
@@ -66,7 +111,7 @@ defmodule StbImage do
   end
 
   @doc """
-  Decodes image from `binary`.
+  Decodes image from `binary` representing an image.
 
   ## Options
 
@@ -90,7 +135,7 @@ defmodule StbImage do
 
   """
   def from_binary(buffer, opts \\ []) when is_binary(buffer) and is_list(opts) do
-    type = opts[:type] || :u8
+    type = normalize_type(opts[:type] || :u8)
     channels = opts[:channels] || 0
 
     with {:ok, img, shape, type, channels} <- StbImage.Nif.from_binary(buffer, channels, type) do
@@ -118,7 +163,7 @@ defmodule StbImage do
   end
 
   @doc """
-  Decodes GIF image from `binary`.
+  Decodes GIF image from a `binary` representing a GIF.
 
   ## Example
 

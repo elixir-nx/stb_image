@@ -20,4 +20,15 @@ defmodule StbImage.Nif do
     do: :erlang.nif_error(:not_loaded)
 
   def to_binary(_format, _data, _width, _height, _channels), do: :erlang.nif_error(:not_loaded)
+
+  def resize(
+        _input_pixels,
+        _input_width,
+        _input_height,
+        _output_w,
+        _output_h,
+        _num_channels,
+        _type_
+      ),
+      do: :erlang.nif_error(:not_loaded)
 end

@@ -225,7 +225,7 @@ defmodule StbImage do
 
   """
   def to_file(%StbImage{data: data, shape: shape, type: type}, path, opts \\ []) do
-    assert_write_type!(type)
+    assert_u8_type!(type)
     {height, width, channels} = shape
     format = opts[:format] || format_from_path!(path)
     assert_encoding_format!(format)
@@ -238,21 +238,28 @@ defmodule StbImage do
   The supported formats are #{@encoding_formats_string}.
 
   ## Example
+
       img = StbImage.new(raw_img, {h, w, channels})
       {:ok, binary} = StbImage.to_binary(img, :png)
 
   """
   def to_binary(%StbImage{data: data, shape: shape, type: type}, format) do
-    assert_write_type!(type)
+    assert_u8_type!(type)
     {height, width, channels} = shape
     assert_encoding_format!(format)
     StbImage.Nif.to_binary(format, data, height, width, channels)
   end
 
-  defp assert_write_type!(:u8), do: :ok
+  def resize(%StbImage{data: data, shape: {height, width, channels}, type: type}, output_w, output_h) do
+    assert_u8_type!(type)
+    {:ok, output_pixels, {output_h, output_w, channels}, type, output_color_mode} = StbImage.Nif.resize(data, width, height, output_w, output_h, channels, type)
+    {:ok, %StbImage{data: output_pixels, shape: {output_h, output_w, channels}, type: type, color_mode: output_color_mode}}
+  end
 
-  defp assert_write_type!(type) do
-    raise ArgumentError, "StbImage can only write to_file/to_binary images with u8 type, got: #{inspect(type)}"
+  defp assert_u8_type!(:u8), do: :ok
+
+  defp assert_u8_type!(type) do
+    raise ArgumentError, "StbImage can only write to_file/to_binary/resize u8 type, got: #{inspect(type)}"
   end
 
   defp format_from_path!(path) do

@@ -132,4 +132,20 @@ defmodule StbImageTest do
       assert StbImage.from_binary(encoded) == read
     end
   end
+
+  test "resize png" do
+    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"))
+    {:ok, resized_img} = StbImage.resize(img, 6, 4)
+    assert resized_img.shape == {4, 6, 4}
+    assert resized_img.color_mode == img.color_mode
+    assert resized_img.type == img.type
+  end
+
+  test "resize jpg" do
+    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.jpg"))
+    {:ok, resized_img} = StbImage.resize(img, 6, 4)
+    assert resized_img.shape == {4, 6, 3}
+    assert resized_img.color_mode == img.color_mode
+    assert resized_img.type == img.type
+  end
 end

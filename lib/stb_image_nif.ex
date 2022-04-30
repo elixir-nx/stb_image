@@ -33,7 +33,8 @@ defmodule StbImage.Nif do
         _input_width,
         _num_channels,
         _output_h,
-        _output_w
+        _output_w,
+        _type
       ),
       do: :erlang.nif_error(:not_loaded)
 end

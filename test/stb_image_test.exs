@@ -112,15 +112,29 @@ defmodule StbImageTest do
     end
   end
 
-  test "resize png" do
+  test "resize png as u8" do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"))
     {:ok, resized_img} = StbImage.resize(img, 4, 6)
     assert resized_img.shape == {4, 6, 4}
     assert resized_img.type == img.type
   end
 
-  test "resize jpg" do
+  test "resize jpg as u8" do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.jpg"))
+    {:ok, resized_img} = StbImage.resize(img, 4, 6)
+    assert resized_img.shape == {4, 6, 3}
+    assert resized_img.type == img.type
+  end
+
+  test "resize png as f32" do
+    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"), type: :f32)
+    {:ok, resized_img} = StbImage.resize(img, 4, 6)
+    assert resized_img.shape == {4, 6, 4}
+    assert resized_img.type == img.type
+  end
+
+  test "resize jpg as f32" do
+    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.jpg"), type: :f32)
     {:ok, resized_img} = StbImage.resize(img, 4, 6)
     assert resized_img.shape == {4, 6, 3}
     assert resized_img.type == img.type

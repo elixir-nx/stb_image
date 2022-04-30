@@ -222,7 +222,7 @@ defmodule StbImage do
 
   """
   def to_file(%StbImage{data: data, shape: shape, type: type}, path, opts \\ []) do
-    assert_u8_type!(type)
+    assert_write_type!(type)
     {height, width, channels} = shape
     format = opts[:format] || format_from_path!(path)
     assert_encoding_format!(format)
@@ -245,7 +245,7 @@ defmodule StbImage do
 
   """
   def to_binary(%StbImage{data: data, shape: shape, type: type}, format) do
-    assert_u8_type!(type)
+    assert_write_type!(type)
     {height, width, channels} = shape
     assert_encoding_format!(format)
     StbImage.Nif.to_binary(format, data, height, width, channels)
@@ -264,18 +264,17 @@ defmodule StbImage do
         %StbImage{data: data, shape: {height, width, channels}, type: type},
         output_h,
         output_w
-      ) when is_dimension(output_h) and is_dimension(output_w) do
-    assert_u8_type!(type)
-
-    with {:ok, output_pixels, {output_h, output_w, channels}, type} <-
-           StbImage.Nif.resize(data, height, width, channels, output_h, output_w) do
+      )
+      when is_dimension(output_h) and is_dimension(output_w) do
+    with {:ok, output_pixels} <-
+           StbImage.Nif.resize(data, height, width, channels, output_h, output_w, type) do
       {:ok, %StbImage{data: output_pixels, shape: {output_h, output_w, channels}, type: type}}
     end
   end
 
-  defp assert_u8_type!(:u8), do: :ok
+  defp assert_write_type!(:u8), do: :ok
 
-  defp assert_u8_type!(type) do
+  defp assert_write_type!(type) do
     raise ArgumentError,
           "StbImage can only write to_file/to_binary/resize u8 type, got: #{inspect(type)}"
   end

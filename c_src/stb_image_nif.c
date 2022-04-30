@@ -70,9 +70,6 @@ static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     if (strcmp(type, "u8") == 0) {
         data = (unsigned char *)stbi_load(path, &x, &y, &n, desired_channels);
         bytes_per_channel = 1;
-    } else if (strcmp(type, "u16") == 0) {
-        data = (unsigned char *)stbi_load_16(path, &x, &y, &n, desired_channels);
-        bytes_per_channel = 2;
     } else if (strcmp(type, "f32") == 0) {
         data = (unsigned char *)stbi_loadf(path, &x, &y, &n, desired_channels);
         bytes_per_channel = 4;
@@ -113,9 +110,6 @@ static ERL_NIF_TERM from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM arg
     if (strcmp(type, "u8") == 0) {
         data = (unsigned char *)stbi_load_from_memory(binary.data, (int)binary.size, &x, &y, &n, desired_channels);
         bytes_per_channel = 1;
-    } else if (strcmp(type, "u16") == 0) {
-        data = (unsigned char *)stbi_load_16_from_memory(binary.data, (int)binary.size, &x, &y, &n, desired_channels);
-        bytes_per_channel = 2;
     } else if (strcmp(type, "f32") == 0) {
         data = (unsigned char *)stbi_loadf_from_memory(binary.data, (int)binary.size, &x, &y, &n, desired_channels);
         bytes_per_channel = 4;

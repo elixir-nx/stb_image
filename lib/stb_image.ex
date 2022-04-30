@@ -26,7 +26,7 @@ defmodule StbImage do
 
     * `:data` - a blob with the image bytes in HWC (heigth-width-channels) order
     * `:shape` - a tuple with the `{height, width, channels}`
-    * `:type` - the type unit in the binary (u8/u16/f32)
+    * `:type` - the type unit in the binary (u8/f32)
 
   The number of channels correlate directly to the color mode.
   1 channel is greyscale, 2 is greyscale+alpha, 3 is RGB, and
@@ -46,7 +46,7 @@ defmodule StbImage do
   ## Options
 
     * `:type` - The type of the data. Defaults to `:u8`.
-      Must be one of `:u8`, `:u16`, `:f32`.
+      Must be one of `:u8` or `:f32`.
 
   """
   def new(data, {h, w, c} = shape, opts \\ [])
@@ -62,7 +62,6 @@ defmodule StbImage do
   end
 
   defp bytes(:u8), do: 1
-  defp bytes(:u16), do: 2
   defp bytes(:f32), do: 4
 
   @compile {:no_warn_undefined, Nx}
@@ -90,7 +89,6 @@ defmodule StbImage do
   end
 
   defp tensor_type({:u, 8}), do: :u8
-  defp tensor_type({:u, 16}), do: :u16
   defp tensor_type({:f, 32}), do: :f32
   defp tensor_type(type), do: raise(ArgumentError, "unsupported tensor type: #{inspect(type)}")
 
@@ -108,7 +106,7 @@ defmodule StbImage do
       Use `0` for auto-detection. Defaults to 0.
 
     * `:type` - The type of the data. Defaults to `:u8`.
-      Must be one of `:u8`, `:u16`, `:f32`.
+      Must be one of `:u8` or `:f32`.
 
   ## Example
 
@@ -141,7 +139,7 @@ defmodule StbImage do
       Use `0` for auto-detection. Defaults to 0.
 
     * `:type` - The type of the data. Defaults to `:u8`.
-      Must be one of `:u8`, `:u16`, `:f32`.
+      Must be one of `:u8` or `:f32`.
 
   ## Example
 

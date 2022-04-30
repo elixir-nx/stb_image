@@ -17,21 +17,6 @@ defmodule StbImageTest do
     assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
   end
 
-  test "decode as u16" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"), type: :u16)
-
-    assert img.type == :u16
-    assert img.shape == {2, 3, 4}
-
-    assert img.data ==
-             <<241, 241, 145, 145, 126, 126, 255, 255, 136, 136, 190, 190, 78, 78, 255, 255, 68,
-               68, 122, 122, 183, 183, 255, 255, 244, 244, 196, 196, 187, 187, 255, 255, 190, 190,
-               205, 205, 145, 145, 255, 255, 144, 144, 184, 184, 200, 200, 255, 255>>
-
-    assert StbImage.new(img.data, img.shape, type: :u16) == img
-    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
-  end
-
   test "decode as f32" do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"), type: :f32)
 

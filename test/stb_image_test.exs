@@ -7,7 +7,6 @@ defmodule StbImageTest do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"))
     assert img.type == :u8
     assert img.shape == {2, 3, 4}
-    assert img.color_mode == :rgba
 
     assert img.data ==
              <<241, 145, 126, 255, 136, 190, 78, 255, 68, 122, 183, 255, 244, 196, 187, 255, 190,
@@ -23,7 +22,6 @@ defmodule StbImageTest do
 
     assert img.type == :u16
     assert img.shape == {2, 3, 4}
-    assert img.color_mode == :rgba
 
     assert img.data ==
              <<241, 241, 145, 145, 126, 126, 255, 255, 136, 136, 190, 190, 78, 78, 255, 255, 68,
@@ -39,7 +37,6 @@ defmodule StbImageTest do
 
     assert img.type == :f32
     assert img.shape == {2, 3, 4}
-    assert img.color_mode == :rgba
 
     assert img.data ==
              <<17, 24, 98, 63, 177, 223, 147, 62, 42, 34, 89, 62, 0, 0, 128, 63, 34, 110, 128, 62,
@@ -56,7 +53,6 @@ defmodule StbImageTest do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.jpg"))
     assert img.type == :u8
     assert img.shape == {2, 3, 3}
-    assert img.color_mode == :rgb
 
     assert img.data ==
              <<180, 128, 70, 148, 128, 78, 89, 134, 101, 222, 170, 112, 182, 162, 112, 112, 157,
@@ -71,7 +67,6 @@ defmodule StbImageTest do
     {:ok, img} = StbImage.from_binary(binary)
     assert img.type == :u8
     assert img.shape == {2, 3, 4}
-    assert img.color_mode == :rgba
 
     assert img.data ==
              <<241, 145, 126, 255, 136, 190, 78, 255, 68, 122, 183, 255, 244, 196, 187, 255, 190,
@@ -86,7 +81,6 @@ defmodule StbImageTest do
     {:ok, img} = StbImage.from_binary(binary)
     assert img.type == :u8
     assert img.shape == {2, 3, 3}
-    assert img.color_mode == :rgb
 
     assert img.data ==
              <<180, 128, 70, 148, 128, 78, 89, 134, 101, 222, 170, 112, 182, 162, 112, 112, 157,
@@ -135,17 +129,15 @@ defmodule StbImageTest do
 
   test "resize png" do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"))
-    {:ok, resized_img} = StbImage.resize(img, 6, 4)
+    {:ok, resized_img} = StbImage.resize(img, 4, 6)
     assert resized_img.shape == {4, 6, 4}
-    assert resized_img.color_mode == img.color_mode
     assert resized_img.type == img.type
   end
 
   test "resize jpg" do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.jpg"))
-    {:ok, resized_img} = StbImage.resize(img, 6, 4)
+    {:ok, resized_img} = StbImage.resize(img, 4, 6)
     assert resized_img.shape == {4, 6, 3}
-    assert resized_img.color_mode == img.color_mode
     assert resized_img.type == img.type
   end
 end

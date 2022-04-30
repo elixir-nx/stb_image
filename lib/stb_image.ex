@@ -253,6 +253,15 @@ defmodule StbImage do
     StbImage.Nif.to_binary(format, data, height, width, channels)
   end
 
+  @doc """
+  Resizes the image into the given `output_h` and `output_w`.
+
+  ## Example
+
+      img = StbImage.new(raw_img, {h, w, channels})
+      {:ok, resized_img} = StbImage.resize(raw_img, div(h, 2), div(w, 2))
+
+  """
   def resize(
         %StbImage{data: data, shape: {height, width, channels}, type: type},
         output_h,

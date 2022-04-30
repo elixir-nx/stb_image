@@ -182,6 +182,12 @@ defmodule StbImage do
     StbImage.Nif.to_binary(format, data, height, width, channels)
   end
 
+
+  def resize(%StbImage{data: data, shape: {height, width, channels}, type: type}, output_w, output_h) do
+      {:ok, output_pixels, {output_h, output_w, channels}, type, output_color_mode} = StbImage.Nif.resize(data, width, height, output_w, output_h, channels, type)
+      {:ok, %StbImage{data: output_pixels, shape: {output_h, output_w, channels}, type: type, color_mode: output_color_mode}}
+  end
+
   defp format_from_path!(path) do
     case Path.extname(path) do
       ".jpg" ->

@@ -1,8 +1,10 @@
 #include <erl_nif.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb_image.h>
 #include <stb_image_write.h>
+#include <stb_image_resize.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -396,6 +398,58 @@ static ERL_NIF_TERM to_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     return enif_make_tuple2(env, enif_make_atom(env, "ok"), binary);
 }
 
+static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
+    if (argc != 7) {
+        return error(env, "expecting 7 arguments: format, data, height, width, and number of channels");
+    }
+
+    ErlNifBinary input_pixels;
+    int input_h, input_w, output_h, output_w, num_channels, stride = 0;
+    char type[MAX_NAME_LENGTH];
+
+    if (!enif_inspect_binary(env, argv[0], &input_pixels)) {
+        return error(env, "invalid old image");
+    }
+
+    if(!enif_get_int(env, argv[1], &input_w)) {
+        return error(env, "invalid input width");
+    }
+    if(!enif_get_int(env, argv[2], &input_h)) {
+        return error(env, "invalid input height");
+    }
+
+    if(!enif_get_int(env, argv[3], &output_w)) {
+        return error(env, "invalid output width");
+    }
+
+    if(!enif_get_int(env, argv[4], &output_h)) {
+        return error(env, "invalid output height");
+    }
+
+    if(!enif_get_int(env, argv[5], &num_channels)) {
+        return error(env, "invalid number of channels");
+    }
+
+    if(!enif_get_atom(env, argv[6], type, sizeof(type), ERL_NIF_LATIN1)) {
+        return error(env, "Invalid type. The only valid type is :u8");
+    }
+
+    int bytes_per_channel = sizeof(unsigned char);
+
+    void* output_pixels = malloc(output_w * output_h * num_channels * bytes_per_channel);
+    if (strcmp(type, "u8") == 0) {
+        int status = stbir_resize_uint8(input_pixels.data, input_w, input_h, stride, (unsigned char*)output_pixels, output_w, output_h, stride, num_channels);
+        if (!status) {
+            return error(env, "failed to resize u8 type");
+        }
+    }
+    else {
+        return error(env, "invalid type ");
+    }
+    ERL_NIF_TERM ret = pack_data(env, output_pixels, output_w, output_h, num_channels, bytes_per_channel, type);
+    return ret;
+}
+
 static int on_load(ErlNifEnv *env, void **_sth1, ERL_NIF_TERM _sth2) {
     return 0;
 }
@@ -413,7 +467,8 @@ static ErlNifFunc nif_functions[] = {
     {"from_binary", 3, from_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"gif_from_binary", 1, gif_from_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"to_file", 6, to_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
-    {"to_binary", 5, to_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND}};
+    {"to_binary", 5, to_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
+    {"resize", 7, resize, ERL_NIF_DIRTY_JOB_CPU_BOUND}};
 
 ERL_NIF_INIT(Elixir.StbImage.Nif, nif_functions, on_load, on_reload, on_upgrade, NULL);
 

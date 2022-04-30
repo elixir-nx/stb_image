@@ -24,13 +24,76 @@ defmodule StbImage do
 
   It has the following fields:
 
-    * `:data` - a binary
+    * `:data` - a blob with the image bytes in HWC (heigth-width-channels) order
     * `:shape` - a tuple with the `{height, width, channels}`
     * `:type` - the type unit in the binary (u8/u16/f32)
     * `:color_mode` - the color mode as `:l`, `:la`, `:rgb`, or `:rgba`
 
   """
   defstruct [:data, :shape, :type, :color_mode]
+
+  @doc """
+  Creates a StbImage directly.
+
+  `data` is a binary blob with the image bytes in HWC
+  (heigth-width-channels) order. `shape` is a tuple
+  with the `heigth`, `width`, and `channel` dimensions.
+
+  ## Options
+
+    * `:color_mode` - the color mode. One is automatically
+      inferred from the number of channels.
+
+    * `:type` - The type of the data. Defaults to `:u8`.
+      Must be one of `:u8`, `:u16`, `:f32`.
+
+  """
+  def new(data, {h, w, c} = shape, opts \\ []) when is_binary(data) and is_integer(h) and h > 0 and is_integer(w) and w > 0  and c in 1..4 do
+    color_mode = opts[:color_mode] || elem({:l, :la, :rgb, :rgba}, c - 1)
+    type = opts[:type] || :u8
+
+    if byte_size(data) == h * w * c * bytes(type) do
+      %StbImage{data: data, shape: shape, color_mode: color_mode, type: type}
+    else
+      raise ArgumentError, "cannot create StbImage because number of bytes do not match shape and type"
+    end
+  end
+
+  defp bytes(:u8), do: 1
+  defp bytes(:u16), do: 2
+  defp bytes(:f32), do: 4
+
+  @compile {:no_warn_undefined, Nx}
+  @compile {:no_warn_undefined, Nx.Type}
+
+  @doc """
+  Converts a `StbImage` to a Nx tensor.
+
+  It accepts the same options as `Nx.from_binary/3`.
+  """
+  def to_nx(%StbImage{data: data, type: type, shape: shape}, opts \\ []) do
+    data
+    |> Nx.from_binary(Nx.Type.normalize!(type), opts)
+    |> Nx.reshape(shape)
+  end
+
+  @doc """
+  Creates a `StbImage` from a Nx tensor.
+
+  The tensor is expected to have shape `{h, w, c}`
+  and one of the supported types.
+  """
+  def from_nx(tensor) when is_struct(tensor, Nx.Tensor) do
+    new(Nx.to_binary(tensor), tensor_shape(Nx.shape(tensor)), type: tensor_type(Nx.type(tensor)))
+  end
+
+  defp tensor_type({:u, 8}), do: :u8
+  defp tensor_type({:u, 16}), do: :u16
+  defp tensor_type({:f, 32}), do: :f32
+  defp tensor_type(type), do: raise ArgumentError, "unsupported tensor type: #{inspect(type)}"
+
+  defp tensor_shape({_, _, _} = shape), do: shape
+  defp tensor_shape(shape), do: raise ArgumentError, "unsupported tensor shape: #{inspect(shape)}"
 
   @doc """
   Decodes image from file at `path`.
@@ -66,7 +129,7 @@ defmodule StbImage do
   end
 
   @doc """
-  Decodes image from `binary`.
+  Decodes image from `binary` representing an image.
 
   ## Options
 
@@ -118,7 +181,7 @@ defmodule StbImage do
   end
 
   @doc """
-  Decodes GIF image from `binary`.
+  Decodes GIF image from a `binary` representing a GIF.
 
   ## Example
 
@@ -161,7 +224,9 @@ defmodule StbImage do
     * `:format` - one of the supported image formats
 
   """
-  def to_file(%StbImage{data: data, shape: {height, width, channels}}, path, opts \\ []) do
+  def to_file(%StbImage{data: data, shape: shape, type: type}, path, opts \\ []) do
+    assert_u8_type!(type)
+    {height, width, channels} = shape
     format = opts[:format] || format_from_path!(path)
     assert_encoding_format!(format)
     StbImage.Nif.to_file(path_to_charlist(path), format, data, height, width, channels)
@@ -173,19 +238,28 @@ defmodule StbImage do
   The supported formats are #{@encoding_formats_string}.
 
   ## Example
-      img = %StbImage{data: raw_img, shape: {h, w, channels}, type: :u8, color_mode: :rgba}
+
+      img = StbImage.new(raw_img, {h, w, channels})
       {:ok, binary} = StbImage.to_binary(img, :png)
 
   """
-  def to_binary(%StbImage{data: data, shape: {height, width, channels}}, format) do
+  def to_binary(%StbImage{data: data, shape: shape, type: type}, format) do
+    assert_u8_type!(type)
+    {height, width, channels} = shape
     assert_encoding_format!(format)
     StbImage.Nif.to_binary(format, data, height, width, channels)
   end
 
-
   def resize(%StbImage{data: data, shape: {height, width, channels}, type: type}, output_w, output_h) do
-      {:ok, output_pixels, {output_h, output_w, channels}, type, output_color_mode} = StbImage.Nif.resize(data, width, height, output_w, output_h, channels, type)
-      {:ok, %StbImage{data: output_pixels, shape: {output_h, output_w, channels}, type: type, color_mode: output_color_mode}}
+    assert_u8_type!(type)
+    {:ok, output_pixels, {output_h, output_w, channels}, type, output_color_mode} = StbImage.Nif.resize(data, width, height, output_w, output_h, channels, type)
+    {:ok, %StbImage{data: output_pixels, shape: {output_h, output_w, channels}, type: type, color_mode: output_color_mode}}
+  end
+
+  defp assert_u8_type!(:u8), do: :ok
+
+  defp assert_u8_type!(type) do
+    raise ArgumentError, "StbImage can only write to_file/to_binary/resize u8 type, got: #{inspect(type)}"
   end
 
   defp format_from_path!(path) do

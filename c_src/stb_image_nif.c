@@ -431,7 +431,7 @@ static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
     }
 
     if(!enif_get_atom(env, argv[6], type, sizeof(type), ERL_NIF_LATIN1)) {
-        return error(env, "invalid type.");
+        return error(env, "invalid type");
     }
 
     int bytes_per_channel = sizeof(unsigned char);
@@ -444,7 +444,7 @@ static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
         }
     }
     else {
-        return error(env, "Incorrect type, the only valid type is :u8 ");
+        return error(env, "Incorrect type, the only valid type is :u8");
     }
     ERL_NIF_TERM ret = pack_data(env, output_pixels, output_w, output_h, num_channels, bytes_per_channel, type);
     return ret;

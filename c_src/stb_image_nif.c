@@ -9,7 +9,6 @@
 #include <stdio.h>
 
 #define MAX_NAME_LENGTH 2048
-#define MAX_TYPE_LENGTH 4
 #define MAX_EXTNAME_LENGTH 4
 
 #include "nif_utils.h"
@@ -21,20 +20,19 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
-static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char *data, int x, int y, int n, int bytes_per_channel, const char *type) {
+static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char *data, int x, int y, int n, int bytes_per_channel) {
     if (data != NULL) {
         ErlNifBinary result;
         if (enif_alloc_binary(x * y * n * bytes_per_channel, &result)) {
             memcpy(result.data, data, result.size);
 
-            return enif_make_tuple4(env,
+            return enif_make_tuple3(env,
                                     enif_make_atom(env, "ok"),
                                     enif_make_binary(env, &result),
                                     enif_make_tuple3(env,
                                                      enif_make_int(env, y),
                                                      enif_make_int(env, x),
-                                                     enif_make_int(env, n)),
-                                    enif_make_atom(env, type));
+                                                     enif_make_int(env, n)));
         } else {
             return error(env, "out of memory");
         }
@@ -45,79 +43,68 @@ static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char *data, int x, int y,
 
 static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 3) {
-        return error(env, "expecting 3 arguments: path, desired_channels, type");
+        return error(env, "expecting 3 arguments: path, desired_channels, bytes per channel");
     }
 
-    char type[MAX_TYPE_LENGTH];
     char path[MAX_NAME_LENGTH];
-    int desired_channels;
+    int desired_channels, bytes_per_channel;
 
     if (!enif_get_string(env, argv[0], path, sizeof(path), ERL_NIF_LATIN1)) {
         return error(env, "invalid path");
     }
-
     if(!enif_get_int(env, argv[1], &desired_channels)) {
         return error(env, "invalid channels");
     }
-
-    if(!enif_get_atom(env, argv[2], type, sizeof(type), ERL_NIF_LATIN1)) {
-        return error(env, "invalid type");
+    if(!enif_get_int(env, argv[2], &bytes_per_channel)) {
+        return error(env, "invalid bytes per channel");
     }
 
-    int bytes_per_channel;
     int x, y, n;
     unsigned char *data;
-    if (strcmp(type, "u8") == 0) {
+    if (bytes_per_channel == 1) {
         data = (unsigned char *)stbi_load(path, &x, &y, &n, desired_channels);
-        bytes_per_channel = 1;
-    } else if (strcmp(type, "f32") == 0) {
+    } else if (bytes_per_channel == 4) {
         data = (unsigned char *)stbi_loadf(path, &x, &y, &n, desired_channels);
-        bytes_per_channel = 4;
     } else {
-        return error(env, "invalid type");
+        return error(env, "invalid bytes per channel");
     }
 
-    ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel, type);
+    ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel);
     free((void *)data);
     return ret;
 }
 
 static ERL_NIF_TERM from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 3) {
-        return error(env, "expecting 3 arguments: binary, desired_channels, type");
+        return error(env, "expecting 3 arguments: binary, desired_channels, bytes per channel");
     }
 
     ErlNifBinary binary;
-    int desired_channels;
-    char type[MAX_NAME_LENGTH];
+    int desired_channels, bytes_per_channel;
     int x, y, n;
     unsigned char *data;
 
     if (!enif_inspect_binary(env, argv[0], &binary)) {
         return error(env, "invalid binary");
     }
-
     if(!enif_get_int(env, argv[1], &desired_channels)) {
         return error(env, "invalid channels");
     }
-
-    if(!enif_get_atom(env, argv[2], type, sizeof(type), ERL_NIF_LATIN1)) {
-        return error(env, "invalid type");
+    if(!enif_get_int(env, argv[2], &bytes_per_channel)) {
+        return error(env, "invalid bytes per channel");
     }
 
-    int bytes_per_channel;
-
-    if (strcmp(type, "u8") == 0) {
+    if (bytes_per_channel == 1) {
         data = (unsigned char *)stbi_load_from_memory(binary.data, (int)binary.size, &x, &y, &n, desired_channels);
         bytes_per_channel = 1;
-    } else if (strcmp(type, "f32") == 0) {
+    } else if (bytes_per_channel == 4) {
         data = (unsigned char *)stbi_loadf_from_memory(binary.data, (int)binary.size, &x, &y, &n, desired_channels);
         bytes_per_channel = 4;
     } else {
-        return error(env, "invalid type");
+        return error(env, "invalid bytes per channel");
     }
 
-    ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel, type);
+    ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel);
     free((void *)data);
     return ret;
 }
@@ -389,12 +376,12 @@ static ERL_NIF_TERM to_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
 
 static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
     if (argc != 7) {
-        return error(env, "expecting 7 arguments: input pixels, input height, input width, number of channels, output height, output width, and type");
+        return error(env, "expecting 7 arguments: input pixels, input height, input width, number of channels, output height, output width, and bytes per channel");
     }
 
     ErlNifBinary input_pixels;
-    int input_h, input_w, output_h, output_w, num_channels, stride = 0;
-    char type[MAX_NAME_LENGTH];
+    int input_h, input_w, output_h, output_w, num_channels, bytes_per_channel;
+    int stride_in_bytes = 0;
 
     if (!enif_inspect_binary(env, argv[0], &input_pixels)) {
         return error(env, "invalid image");
@@ -414,27 +401,18 @@ static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
     if(!enif_get_int(env, argv[5], &output_w)) {
         return error(env, "invalid output width");
     }
-    if(!enif_get_atom(env, argv[6], type, sizeof(type), ERL_NIF_LATIN1)) {
-        return error(env, "invalid type");
+    if(!enif_get_int(env, argv[6], &bytes_per_channel)) {
+        return error(env, "invalid bytes per channel");
     }
 
-    int bytes_per_channel;
     int status;
     ErlNifBinary result;
 
-    if (strcmp(type, "u8") == 0) {
-        bytes_per_channel = 1;
-    } else if (strcmp(type, "f32") == 0) {
-        bytes_per_channel = 4;
-    } else {
-        return error(env, "invalid type");
-    }
-
     if (enif_alloc_binary(output_w * output_h * num_channels * bytes_per_channel, &result)) {
         if (bytes_per_channel == 1) {
-            status = stbir_resize_uint8(input_pixels.data, input_w, input_h, stride, result.data, output_w, output_h, stride, num_channels);
+            status = stbir_resize_uint8(input_pixels.data, input_w, input_h, stride_in_bytes, result.data, output_w, output_h, stride_in_bytes, num_channels);
         } else if (bytes_per_channel == 4) {
-            status = stbir_resize_float((float *)input_pixels.data, input_w, input_h, stride, (float *)result.data, output_w, output_h, stride, num_channels);
+            status = stbir_resize_float((float *)input_pixels.data, input_w, input_h, stride_in_bytes, (float *)result.data, output_w, output_h, stride_in_bytes, num_channels);
         } else {
             return error(env, "invalid type");
         }

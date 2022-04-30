@@ -124,8 +124,7 @@ defmodule StbImage do
     type = opts[:type] || :u8
     channels = opts[:channels] || 0
 
-    with {:ok, img, shape, type} <-
-           StbImage.Nif.from_file(path_to_charlist(path), channels, type) do
+    with {:ok, img, shape} <- StbImage.Nif.from_file(path_to_charlist(path), channels, bytes(type)) do
       {:ok, %StbImage{data: img, shape: shape, type: type}}
     end
   end
@@ -158,7 +157,7 @@ defmodule StbImage do
     type = opts[:type] || :u8
     channels = opts[:channels] || 0
 
-    with {:ok, img, shape, type} <- StbImage.Nif.from_binary(buffer, channels, type) do
+    with {:ok, img, shape} <- StbImage.Nif.from_binary(buffer, channels, bytes(type)) do
       {:ok, %StbImage{data: img, shape: shape, type: type}}
     end
   end
@@ -267,7 +266,7 @@ defmodule StbImage do
       )
       when is_dimension(output_h) and is_dimension(output_w) do
     with {:ok, output_pixels} <-
-           StbImage.Nif.resize(data, height, width, channels, output_h, output_w, type) do
+           StbImage.Nif.resize(data, height, width, channels, output_h, output_w, bytes(type)) do
       {:ok, %StbImage{data: output_pixels, shape: {output_h, output_w, channels}, type: type}}
     end
   end

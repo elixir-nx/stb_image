@@ -20,8 +20,6 @@ defmodule StbImage do
   There are also specific functions for working with GIFs.
   """
 
-  defguardp is_path(path) when is_binary(path) or is_list(path)
-
   @doc """
   The `StbImage` struct.
 
@@ -29,7 +27,7 @@ defmodule StbImage do
 
     * `:data` - a blob with the image bytes in HWC (heigth-width-channels) order
     * `:shape` - a tuple with the `{height, width, channels}`
-    * `:type` - the type unit in the binary (u8/f32)
+    * `:type` - the type unit in the binary (`{:u, 8}` or `{:f, 32}`)
 
   The number of channels correlate directly to the color mode.
   1 channel is greyscale, 2 is greyscale+alpha, 3 is RGB, and
@@ -37,7 +35,8 @@ defmodule StbImage do
   """
   defstruct [:data, :shape, :type]
 
-  defguard is_dimension(d) when is_integer(d) and d > 0
+  defguardp is_path(path) when is_binary(path) or is_list(path)
+  defguardp is_dimension(d) when is_integer(d) and d > 0
 
   @doc """
   Creates a StbImage directly.
@@ -48,13 +47,14 @@ defmodule StbImage do
 
   ## Options
 
-    * `:type` - The type of the data. Defaults to `:u8`.
-      Must be one of `:u8` or `:f32`.
+    * `:type` - The type of the data. Defaults to `{:u, 8}`.
+      Must be one of `{:u, 8}` or `{:f, 32}`. The `:u8` and
+      `:f32` convenience atom syntax is also available.
 
   """
   def new(data, {h, w, c} = shape, opts \\ [])
       when is_binary(data) and is_dimension(h) and is_dimension(w) and c in 1..4 do
-    type = opts[:type] || :u8
+    type = type(opts[:type] || :u8)
 
     if byte_size(data) == h * w * c * bytes(type) do
       %StbImage{data: data, shape: shape, type: type}
@@ -65,7 +65,6 @@ defmodule StbImage do
   end
 
   @compile {:no_warn_undefined, Nx}
-  @compile {:no_warn_undefined, Nx.Type}
 
   @doc """
   Converts a `StbImage` to a Nx tensor.
@@ -74,7 +73,7 @@ defmodule StbImage do
   """
   def to_nx(%StbImage{data: data, type: type, shape: shape}, opts \\ []) do
     data
-    |> Nx.from_binary(Nx.Type.normalize!(type), opts)
+    |> Nx.from_binary(type, opts)
     |> Nx.reshape(shape)
   end
 
@@ -88,15 +87,21 @@ defmodule StbImage do
     new(Nx.to_binary(tensor), tensor_shape(Nx.shape(tensor)), type: tensor_type(Nx.type(tensor)))
   end
 
-  defp tensor_type({:u, 8}), do: :u8
-  defp tensor_type({:f, 32}), do: :f32
-  defp tensor_type(type), do: raise(ArgumentError, "unsupported tensor type: #{inspect(type)}")
+  defp tensor_type({:u, 8}), do: {:u, 8}
+  defp tensor_type({:f, 32}), do: {:f, 32}
 
-  defp tensor_shape({_, _, _} = shape),
+  defp tensor_type(type),
+    do: raise(ArgumentError, "unsupported tensor type: #{inspect(type)} (expected u8/f32)")
+
+  defp tensor_shape({_, _, c} = shape) when c in 1..4,
     do: shape
 
   defp tensor_shape(shape),
-    do: raise(ArgumentError, "unsupported tensor shape: #{inspect(shape)}")
+    do:
+      raise(
+        ArgumentError,
+        "unsupported tensor shape: #{inspect(shape)} (expected height-width-channel)"
+      )
 
   @doc """
   Decodes image from file at `path`.
@@ -184,7 +189,7 @@ defmodule StbImage do
   """
   def gif_from_binary(binary) when is_binary(binary) do
     with {:ok, frames, shape, delays} <- StbImage.Nif.gif_from_binary(binary) do
-      stb_frames = for frame <- frames, do: %StbImage{data: frame, shape: shape, type: :u8}
+      stb_frames = for frame <- frames, do: %StbImage{data: frame, shape: shape, type: {:u, 8}}
 
       {:ok, stb_frames, delays}
     end
@@ -259,21 +264,21 @@ defmodule StbImage do
   end
 
   defp assert_write_type_and_format!(type, format) when format in [:png, :jpg, :bmp, :tga] do
-    if type != :u8 do
-      raise ArgumentError, "incompatible type (#{type}) for #{inspect(format)}"
+    if type != {:u, 8} do
+      raise ArgumentError, "incompatible type (#{inspect(type)}) for #{inspect(format)}"
     end
   end
 
   defp assert_write_type_and_format!(type, format) when format in [:hdr] do
-    if type != :f32 do
-      raise ArgumentError, "incompatible type (#{type}) for #{inspect(format)}"
+    if type != {:f, 32} do
+      raise ArgumentError, "incompatible type (#{inspect(type)}) for #{inspect(format)}"
     end
   end
 
   defp assert_write_type_and_format!(_, format) do
     raise ArgumentError,
-            "got an unsupported encoding format #{inspect(format)}, " <>
-              "the format must be one of #{inspect(@encoding_formats)}"
+          "got an unsupported encoding format #{inspect(format)}, " <>
+            "the format must be one of #{inspect(@encoding_formats)}"
   end
 
   defp format_from_path!(path) do
@@ -305,9 +310,13 @@ defmodule StbImage do
   defp path_to_charlist(path) when is_list(path), do: path
   defp path_to_charlist(path) when is_binary(path), do: String.to_charlist(path)
 
-  defp bytes(:u8), do: 1
-  defp bytes(:f32), do: 4
+  defp type(:u8), do: {:u, 8}
+  defp type(:f32), do: {:f, 32}
+  defp type({:u, 8}), do: {:u, 8}
+  defp type({:f, 32}), do: {:f, 32}
 
-  defp bytes_to_type(1), do: :u8
-  defp bytes_to_type(4), do: :f32
+  defp bytes({_, s}), do: div(s, 8)
+
+  defp bytes_to_type(1), do: {:u, 8}
+  defp bytes_to_type(4), do: {:f, 32}
 end

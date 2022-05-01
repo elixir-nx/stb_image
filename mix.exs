@@ -1,7 +1,7 @@
 defmodule StbImage.MixProject do
   use Mix.Project
 
-  @version "0.3.0"
+  @version "0.4.0"
   @github_url "https://github.com/elixir-nx/stb_image"
 
   def project do
@@ -27,7 +27,7 @@ defmodule StbImage.MixProject do
   defp deps do
     [
       {:elixir_make, "~> 0.6"},
-      {:nx, "~> 0.2", optional: true},
+      {:nx, "~> 0.1", optional: true},
       {:ex_doc, "~> 0.23", only: :docs, runtime: false}
     ]
   end

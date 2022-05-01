@@ -13,24 +13,6 @@ defmodule StbImageTest do
                205, 145, 255, 144, 184, 200, 255>>
 
     assert StbImage.new(img.data, img.shape) == img
-    assert StbImage.new(img.data, img.shape, type: :u8) == img
-    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
-  end
-
-  test "decode as f32" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"), type: :f32)
-
-    assert img.type == :f32
-    assert img.shape == {2, 3, 4}
-
-    assert img.data ==
-             <<17, 24, 98, 63, 177, 223, 147, 62, 42, 34, 89, 62, 0, 0, 128, 63, 34, 110, 128, 62,
-               95, 0, 6, 63, 3, 51, 151, 61, 0, 0, 128, 63, 40, 156, 95, 61, 191, 65, 74, 62, 114,
-               194, 246, 62, 0, 0, 128, 63, 3, 85, 104, 63, 224, 124, 15, 63, 6, 100, 1, 63, 0, 0,
-               128, 63, 95, 0, 6, 63, 48, 98, 30, 63, 177, 223, 147, 62, 0, 0, 128, 63, 180, 163,
-               145, 62, 93, 188, 249, 62, 84, 2, 22, 63, 0, 0, 128, 63>>
-
-    assert StbImage.new(img.data, img.shape, type: :f32) == img
     assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
   end
 
@@ -44,6 +26,15 @@ defmodule StbImageTest do
                124>>
 
     assert StbImage.new(img.data, img.shape) == img
+    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
+  end
+
+  test "decode hdr from file" do
+    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.hdr"))
+    assert img.type == :f32
+    assert img.shape == {384, 768, 3}
+    assert is_binary(img.data)
+    assert StbImage.new(img.data, img.shape, type: :f32) == img
     assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
   end
 
@@ -75,6 +66,16 @@ defmodule StbImageTest do
     assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
   end
 
+  test "decode hdr from memory" do
+    {:ok, binary} = File.read(Path.join(__DIR__, "test.hdr"))
+    {:ok, img} = StbImage.from_binary(binary)
+    assert img.type == :f32
+    assert img.shape == {384, 768, 3}
+    assert is_binary(img.data)
+    assert StbImage.new(img.data, img.shape, type: :f32) == img
+    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
+  end
+
   test "decode gif" do
     {:ok, frames, delays} = StbImage.gif_from_file(Path.join(__DIR__, "test.gif"))
     frame = Enum.at(frames, 0)
@@ -89,61 +90,48 @@ defmodule StbImageTest do
   for ext <- ~w(bmp png tga jpg hdr)a do
     @ext ext
 
-    test "save image #{@ext} to file" do
-      type = if @ext == :hdr, do: :f32, else: :u8
-      read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"), type: type)
-      {:ok, img} = read
+    test "decode #{@ext} from file matches decode from binary" do
+      {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
+      assert StbImage.from_binary(File.read!(Path.join(__DIR__, "test.#{@ext}"))) == {:ok, img}
+    end
+
+    test "decode #{@ext} from file and save to file" do
+      {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
       save_at = "tmp/save_test.#{@ext}"
 
       try do
         File.mkdir_p!("tmp")
         :ok = StbImage.to_file(img, save_at)
-        assert StbImage.from_file(save_at, type: type) == read
+        assert StbImage.from_file(save_at) == {:ok, img}
       after
         File.rm!(save_at)
       end
     end
 
-    test "encode image as #{@ext} in memory" do
-      type = if @ext == :hdr, do: :f32, else: :u8
-      read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"), type: type)
-      {:ok, img} = read
+    test "decode #{@ext} from file and encode to binary" do
+      {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
 
       {:ok, encoded} = StbImage.to_binary(img, @ext)
-      assert StbImage.from_binary(encoded, type: type) == read
+      assert StbImage.from_binary(encoded) == {:ok, img}
     end
   end
 
-  test "resize png as u8" do
+  test "resize png" do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"))
     {:ok, resized_img} = StbImage.resize(img, 4, 6)
     assert resized_img.shape == {4, 6, 4}
     assert resized_img.type == img.type
   end
 
-  test "resize jpg as u8" do
+  test "resize jpg" do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.jpg"))
     {:ok, resized_img} = StbImage.resize(img, 4, 6)
     assert resized_img.shape == {4, 6, 3}
     assert resized_img.type == img.type
   end
 
-  test "resize png as f32" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"), type: :f32)
-    {:ok, resized_img} = StbImage.resize(img, 4, 6)
-    assert resized_img.shape == {4, 6, 4}
-    assert resized_img.type == img.type
-  end
-
-  test "resize jpg as f32" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.jpg"), type: :f32)
-    {:ok, resized_img} = StbImage.resize(img, 4, 6)
-    assert resized_img.shape == {4, 6, 3}
-    assert resized_img.type == img.type
-  end
-
-  test "resize hdr as f32" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.hdr"), type: :f32)
+  test "resize hdr" do
+    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.hdr"))
     {:ok, resized_img} = StbImage.resize(img, 192, 384)
     assert resized_img.shape == {192, 384, 3}
     assert resized_img.type == img.type

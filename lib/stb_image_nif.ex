@@ -12,10 +12,10 @@ defmodule StbImage.Nif do
     end
   end
 
-  def from_file(_path, _desired_channels, _type),
+  def from_file(_path, _desired_channels),
     do: :erlang.nif_error(:not_loaded)
 
-  def from_binary(_buffer, _desired_channels, _type),
+  def from_binary(_buffer, _desired_channels),
     do: :erlang.nif_error(:not_loaded)
 
   def gif_from_binary(_gif_path),

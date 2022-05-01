@@ -2,7 +2,7 @@ defmodule StbImage do
   @moduledoc """
   Tiny image encoding and decoding.
 
-  The following formats are supported:
+  The following formats are supported and have type u8:
 
     * JPEG baseline & progressive (12 bpc/arithmetic not supported, same as stock IJG lib)
     * PNG 1/2/4/8/16-bit-per-channel
@@ -10,9 +10,12 @@ defmodule StbImage do
     * BMP non-1bpp, non-RLE
     * PSD (composited view only, no extra channels, 8/16 bit-per-channel)
     * GIF (always reports as 4-channel)
-    * HDR (radiance rgbE format)
     * PIC (Softimage PIC)
     * PNM (PPM and PGM binary only)
+
+  The following formats are supported and have type f32:
+
+    * HDR (radiance rgbE format) (type is f32)
 
   There are also specific functions for working with GIFs.
   """
@@ -61,9 +64,6 @@ defmodule StbImage do
     end
   end
 
-  defp bytes(:u8), do: 1
-  defp bytes(:f32), do: 4
-
   @compile {:no_warn_undefined, Nx}
   @compile {:no_warn_undefined, Nx.Type}
 
@@ -82,7 +82,7 @@ defmodule StbImage do
   Creates a `StbImage` from a Nx tensor.
 
   The tensor is expected to have shape `{h, w, c}`
-  and one of the supported types.
+  and one of the supported types (u8/f32).
   """
   def from_nx(tensor) when is_struct(tensor, Nx.Tensor) do
     new(Nx.to_binary(tensor), tensor_shape(Nx.shape(tensor)), type: tensor_type(Nx.type(tensor)))
@@ -92,7 +92,8 @@ defmodule StbImage do
   defp tensor_type({:f, 32}), do: :f32
   defp tensor_type(type), do: raise(ArgumentError, "unsupported tensor type: #{inspect(type)}")
 
-  defp tensor_shape({_, _, _} = shape), do: shape
+  defp tensor_shape({_, _, _} = shape),
+    do: shape
 
   defp tensor_shape(shape),
     do: raise(ArgumentError, "unsupported tensor shape: #{inspect(shape)}")
@@ -104,9 +105,6 @@ defmodule StbImage do
 
     * `:channels` - The number of desired channels.
       Use `0` for auto-detection. Defaults to 0.
-
-    * `:type` - The type of the data. Defaults to `:u8`.
-      Must be one of `:u8` or `:f32`.
 
   ## Example
 
@@ -121,12 +119,10 @@ defmodule StbImage do
 
   """
   def from_file(path, opts \\ []) when is_path(path) and is_list(opts) do
-    type = opts[:type] || :u8
     channels = opts[:channels] || 0
 
-    with {:ok, img, shape} <-
-           StbImage.Nif.from_file(path_to_charlist(path), channels, bytes(type)) do
-      {:ok, %StbImage{data: img, shape: shape, type: type}}
+    with {:ok, img, shape, bytes} <- StbImage.Nif.from_file(path_to_charlist(path), channels) do
+      {:ok, %StbImage{data: img, shape: shape, type: bytes_to_type(bytes)}}
     end
   end
 
@@ -137,9 +133,6 @@ defmodule StbImage do
 
     * `:channels` - The number of desired channels.
       Use `0` for auto-detection. Defaults to 0.
-
-    * `:type` - The type of the data. Defaults to `:u8`.
-      Must be one of `:u8` or `:f32`.
 
   ## Example
 
@@ -155,11 +148,10 @@ defmodule StbImage do
 
   """
   def from_binary(buffer, opts \\ []) when is_binary(buffer) and is_list(opts) do
-    type = opts[:type] || :u8
     channels = opts[:channels] || 0
 
-    with {:ok, img, shape} <- StbImage.Nif.from_binary(buffer, channels, bytes(type)) do
-      {:ok, %StbImage{data: img, shape: shape, type: type}}
+    with {:ok, img, shape, bytes} <- StbImage.Nif.from_binary(buffer, channels) do
+      {:ok, %StbImage{data: img, shape: shape, type: bytes_to_type(bytes)}}
     end
   end
 
@@ -214,8 +206,6 @@ defmodule StbImage do
   Make sure the directory you intend to write the file to exists,
   otherwise an error is returned.
 
-  Only u8 type available for :png, :jpg, :bmp and :tga and f32 for :hdr at the moment.
-
   ## Options
 
     * `:format` - one of the supported image formats
@@ -224,7 +214,6 @@ defmodule StbImage do
   def to_file(%StbImage{data: data, shape: shape, type: type}, path, opts \\ []) do
     {height, width, channels} = shape
     format = opts[:format] || format_from_path!(path)
-    assert_encoding_format!(format)
     assert_write_type_and_format!(type, format)
     StbImage.Nif.to_file(path_to_charlist(path), format, data, height, width, channels)
   end
@@ -236,8 +225,6 @@ defmodule StbImage do
 
   Returns `{:ok, binary}` on success and `{:error, reason}` otherwise.
 
-  Only u8 type available for :png, :jpg, :bmp and :tga and f32 for :hdr at the moment.
-
   ## Example
 
       img = StbImage.new(raw_img, {h, w, channels})
@@ -245,7 +232,6 @@ defmodule StbImage do
 
   """
   def to_binary(%StbImage{data: data, shape: shape, type: type}, format) do
-    assert_encoding_format!(format)
     assert_write_type_and_format!(type, format)
     {height, width, channels} = shape
     StbImage.Nif.to_binary(format, data, height, width, channels)
@@ -272,31 +258,22 @@ defmodule StbImage do
     end
   end
 
-  defp assert_write_type_and_format!(:u8, format) do
-    case format do
-      f when f in [:png, :jpg, :bmp, :tga] ->
-        :ok
-
-      _ ->
-        raise ArgumentError,
-              "incompatible type and format, the u8 representation only available for png, jpg, bmp, and tga images"
+  defp assert_write_type_and_format!(type, format) when format in [:png, :jpg, :bmp, :tga] do
+    if type != :u8 do
+      raise ArgumentError, "incompatible type (#{type}) for #{inspect(format)}"
     end
   end
 
-  defp assert_write_type_and_format!(:f32, format) do
-    case format do
-      :hdr ->
-        :ok
-
-      _ ->
-        raise ArgumentError,
-              "incompatible type and format, the float representation only available for hdr images"
+  defp assert_write_type_and_format!(type, format) when format in [:hdr] do
+    if type != :f32 do
+      raise ArgumentError, "incompatible type (#{type}) for #{inspect(format)}"
     end
   end
 
-  defp assert_write_type_and_format!(_type, _format) do
+  defp assert_write_type_and_format!(_, format) do
     raise ArgumentError,
-          "unsupported combination of type and format"
+            "got an unsupported encoding format #{inspect(format)}, " <>
+              "the format must be one of #{inspect(@encoding_formats)}"
   end
 
   defp format_from_path!(path) do
@@ -325,14 +302,12 @@ defmodule StbImage do
     end
   end
 
-  defp assert_encoding_format!(format) do
-    unless format in @encoding_formats do
-      raise ArgumentError,
-            "got an unsupported encoding format #{inspect(format)}, " <>
-              "the format must be one of #{inspect(@encoding_formats)}"
-    end
-  end
-
   defp path_to_charlist(path) when is_list(path), do: path
   defp path_to_charlist(path) when is_binary(path), do: String.to_charlist(path)
+
+  defp bytes(:u8), do: 1
+  defp bytes(:f32), do: 4
+
+  defp bytes_to_type(1), do: :u8
+  defp bytes_to_type(4), do: :f32
 end

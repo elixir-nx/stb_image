@@ -1,4 +1,5 @@
 #include <erl_nif.h>
+#define STBI_NO_FAILURE_STRINGS
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
@@ -26,13 +27,14 @@ static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char *data, int x, int y,
         if (enif_alloc_binary(x * y * n * bytes_per_channel, &result)) {
             memcpy(result.data, data, result.size);
 
-            return enif_make_tuple3(env,
+            return enif_make_tuple4(env,
                                     enif_make_atom(env, "ok"),
                                     enif_make_binary(env, &result),
                                     enif_make_tuple3(env,
                                                      enif_make_int(env, y),
                                                      enif_make_int(env, x),
-                                                     enif_make_int(env, n)));
+                                                     enif_make_int(env, n)),
+                                    enif_make_int(env, bytes_per_channel));
         } else {
             return error(env, "out of memory");
         }
@@ -42,8 +44,8 @@ static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char *data, int x, int y,
 }
 
 static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
-    if (argc != 3) {
-        return error(env, "expecting 3 arguments: path, desired_channels, bytes per channel");
+    if (argc != 2) {
+        return error(env, "expecting 3 arguments: path and desired_channels");
     }
 
     char path[MAX_NAME_LENGTH];
@@ -55,18 +57,19 @@ static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     if(!enif_get_int(env, argv[1], &desired_channels)) {
         return error(env, "invalid channels");
     }
-    if(!enif_get_int(env, argv[2], &bytes_per_channel)) {
-        return error(env, "invalid bytes per channel");
-    }
 
     int x, y, n;
     unsigned char *data;
-    if (bytes_per_channel == 1) {
-        data = (unsigned char *)stbi_load(path, &x, &y, &n, desired_channels);
-    } else if (bytes_per_channel == 4) {
-        data = (unsigned char *)stbi_loadf(path, &x, &y, &n, desired_channels);
+
+    FILE *f = stbi__fopen(path, "rb");
+    if (!f) { return error(env, "could not open file"); }
+
+    if (stbi_is_hdr_from_file(f)) {
+        data = (unsigned char *)stbi_loadf_from_file(f, &x, &y, &n, desired_channels);
+        bytes_per_channel = 4;
     } else {
-        return error(env, "invalid bytes per channel");
+        data = (unsigned char *)stbi_load_from_file(f, &x, &y, &n, desired_channels);
+        bytes_per_channel = 1;
     }
 
     ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel);
@@ -75,8 +78,8 @@ static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
 }
 
 static ERL_NIF_TERM from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
-    if (argc != 3) {
-        return error(env, "expecting 3 arguments: binary, desired_channels, bytes per channel");
+    if (argc != 2) {
+        return error(env, "expecting 2 arguments: binary and desired_channels");
     }
 
     ErlNifBinary binary;
@@ -90,18 +93,13 @@ static ERL_NIF_TERM from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM arg
     if(!enif_get_int(env, argv[1], &desired_channels)) {
         return error(env, "invalid channels");
     }
-    if(!enif_get_int(env, argv[2], &bytes_per_channel)) {
-        return error(env, "invalid bytes per channel");
-    }
 
-    if (bytes_per_channel == 1) {
-        data = (unsigned char *)stbi_load_from_memory(binary.data, (int)binary.size, &x, &y, &n, desired_channels);
-        bytes_per_channel = 1;
-    } else if (bytes_per_channel == 4) {
+    if (stbi_is_hdr_from_memory(binary.data, (int)binary.size)) {
         data = (unsigned char *)stbi_loadf_from_memory(binary.data, (int)binary.size, &x, &y, &n, desired_channels);
         bytes_per_channel = 4;
     } else {
-        return error(env, "invalid bytes per channel");
+        data = (unsigned char *)stbi_load_from_memory(binary.data, (int)binary.size, &x, &y, &n, desired_channels);
+        bytes_per_channel = 1;
     }
 
     ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel);
@@ -451,8 +449,8 @@ static int on_upgrade(ErlNifEnv *_sth0, void **_sth1, void **_sth2, ERL_NIF_TERM
 }
 
 static ErlNifFunc nif_functions[] = {
-    {"from_file", 3, from_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
-    {"from_binary", 3, from_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
+    {"from_file", 2, from_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"from_binary", 2, from_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"gif_from_binary", 1, gif_from_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"to_file", 6, to_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"to_binary", 5, to_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},

@@ -124,7 +124,8 @@ defmodule StbImage do
     type = opts[:type] || :u8
     channels = opts[:channels] || 0
 
-    with {:ok, img, shape} <- StbImage.Nif.from_file(path_to_charlist(path), channels, bytes(type)) do
+    with {:ok, img, shape} <-
+           StbImage.Nif.from_file(path_to_charlist(path), channels, bytes(type)) do
       {:ok, %StbImage{data: img, shape: shape, type: type}}
     end
   end
@@ -273,23 +274,29 @@ defmodule StbImage do
 
   defp assert_write_type_and_format!(:u8, format) do
     case format do
-      f when f in [:png, :jpg, :bmp, :tga] -> :ok
-      _ -> raise ArgumentError,
-      "Incompatible type and format, the u8 representation only available for png, jpg, bmp and tga images"
+      f when f in [:png, :jpg, :bmp, :tga] ->
+        :ok
+
+      _ ->
+        raise ArgumentError,
+              "incompatible type and format, the u8 representation only available for png, jpg, bmp, and tga images"
     end
   end
 
   defp assert_write_type_and_format!(:f32, format) do
     case format do
-      :hdr -> :ok
-      _ -> raise ArgumentError,
-      "Incompatible type and format, the float representation only available for hdr images"
+      :hdr ->
+        :ok
+
+      _ ->
+        raise ArgumentError,
+              "incompatible type and format, the float representation only available for hdr images"
     end
   end
 
   defp assert_write_type_and_format!(_type, _format) do
     raise ArgumentError,
-    "Unsupported combination of type and format"
+          "unsupported combination of type and format"
   end
 
   defp format_from_path!(path) do

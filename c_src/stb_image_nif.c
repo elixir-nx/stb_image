@@ -10,6 +10,7 @@
 
 #define MAX_NAME_LENGTH 2048
 #define MAX_EXTNAME_LENGTH 4
+#define MAX_TYPE_LENGTH 9
 
 #include "nif_utils.h"
 
@@ -181,7 +182,7 @@ static ERL_NIF_TERM gif_from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
 
 static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 6) {
-        return error(env, "expecting 6 arguments: path, format, data, height, width, and number of channels");
+        return error(env, "expecting 6 arguments: path, format, data, height, width, number of channels");
     }
 
     char path[MAX_NAME_LENGTH], format[MAX_EXTNAME_LENGTH];
@@ -228,6 +229,11 @@ static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
         int status = stbi_write_jpg(path, w, h, comp, result.data, quality);
         if (!status) {
             return error(env, "failed to write jpg");
+        }
+    } else if (strcmp(format, "hdr") == 0) {
+        int status = stbi_write_hdr(path, w, h, comp, (float*)result.data);
+        if (!status) {
+            return error(env, "failed to write hdr");
         }
     } else {
         return error(env, "wrong format");
@@ -309,7 +315,7 @@ static void finalize_write(WriteContext *context, ErlNifEnv *env, ERL_NIF_TERM *
 
 static ERL_NIF_TERM to_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 5) {
-        return error(env, "expecting 5 arguments: format, data, height, width, and number of channels");
+        return error(env, "expecting 5 arguments: format, data, height, width, number of channels");
     }
 
     char format[MAX_EXTNAME_LENGTH];
@@ -362,6 +368,12 @@ static ERL_NIF_TERM to_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         finalize_write(&context, env, &binary);
         if (!status) {
             return error(env, "failed to write jpg");
+        }
+    } else if (strcmp(format, "hdr") == 0) {
+        int status = stbi_write_hdr_to_func(write_chunk, (void*) &context, w, h, comp, (float*)img.data);
+        finalize_write(&context, env, &binary);
+        if (!status) {
+            return error(env, "failed to write hdr");
         }
     } else {
         return error(env, "wrong format");

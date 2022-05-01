@@ -10,7 +10,6 @@
 
 #define MAX_NAME_LENGTH 2048
 #define MAX_EXTNAME_LENGTH 4
-#define MAX_TYPE_LENGTH 9
 
 #include "nif_utils.h"
 
@@ -182,7 +181,7 @@ static ERL_NIF_TERM gif_from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
 
 static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 6) {
-        return error(env, "expecting 6 arguments: path, format, data, height, width, number of channels");
+        return error(env, "expecting 6 arguments: path, format, data, height, width, and number of channels");
     }
 
     char path[MAX_NAME_LENGTH], format[MAX_EXTNAME_LENGTH];
@@ -315,7 +314,7 @@ static void finalize_write(WriteContext *context, ErlNifEnv *env, ERL_NIF_TERM *
 
 static ERL_NIF_TERM to_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 5) {
-        return error(env, "expecting 5 arguments: format, data, height, width, number of channels");
+        return error(env, "expecting 5 arguments: format, data, height, width, and number of channels");
     }
 
     char format[MAX_EXTNAME_LENGTH];

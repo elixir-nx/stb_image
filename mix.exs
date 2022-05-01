@@ -1,18 +1,18 @@
 defmodule StbImage.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.3.0"
   @github_url "https://github.com/elixir-nx/stb_image"
 
   def project do
     [
       app: :stb_image,
-      version: "0.1.2",
+      version: @version,
       elixir: "~> 1.12",
       compilers: [:elixir_make] ++ Mix.compilers(),
       deps: deps(),
       name: "StbImage",
-      description: "A tiny image library using stb_image as the backend",
+      description: "A tiny image reader/writer library using stb_image as the backend",
       docs: docs(),
       package: package()
     ]
@@ -27,6 +27,7 @@ defmodule StbImage.MixProject do
   defp deps do
     [
       {:elixir_make, "~> 0.6"},
+      {:nx, "~> 0.2", optional: true},
       {:ex_doc, "~> 0.23", only: :docs, runtime: false}
     ]
   end
@@ -42,7 +43,7 @@ defmodule StbImage.MixProject do
   defp package() do
     [
       name: "stb_image",
-      files: ~w(c_src lib .formatter.exs mix.exs README* LICENSE* Makefile 3rd_party/stb),
+      files: ~w(3rd_party/stb c_src lib mix.exs README* LICENSE* Makefile),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @github_url}
     ]

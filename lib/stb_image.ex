@@ -197,7 +197,7 @@ defmodule StbImage do
     end
   end
 
-  @encoding_formats ~w(jpg png bmp tga)a
+  @encoding_formats ~w(jpg png bmp tga hdr)a
   @encoding_formats_string Enum.map_join(@encoding_formats, ", ", &inspect/1)
 
   @doc """
@@ -213,7 +213,7 @@ defmodule StbImage do
   Make sure the directory you intend to write the file to exists,
   otherwise an error is returned.
 
-  Only u8 images can be saved at the moment.
+  Only u8 type available for :png, :jpg, :bmp and :tga and f32 for :hdr at the moment.
 
   ## Options
 
@@ -221,10 +221,10 @@ defmodule StbImage do
 
   """
   def to_file(%StbImage{data: data, shape: shape, type: type}, path, opts \\ []) do
-    assert_write_type!(type)
     {height, width, channels} = shape
     format = opts[:format] || format_from_path!(path)
     assert_encoding_format!(format)
+    assert_write_type_and_format!(type, format)
     StbImage.Nif.to_file(path_to_charlist(path), format, data, height, width, channels)
   end
 
@@ -235,7 +235,7 @@ defmodule StbImage do
 
   Returns `{:ok, binary}` on success and `{:error, reason}` otherwise.
 
-  Only u8 images can be encoded at the moment.
+  Only u8 type available for :png, :jpg, :bmp and :tga and f32 for :hdr at the moment.
 
   ## Example
 
@@ -244,9 +244,9 @@ defmodule StbImage do
 
   """
   def to_binary(%StbImage{data: data, shape: shape, type: type}, format) do
-    assert_write_type!(type)
-    {height, width, channels} = shape
     assert_encoding_format!(format)
+    assert_write_type_and_format!(type, format)
+    {height, width, channels} = shape
     StbImage.Nif.to_binary(format, data, height, width, channels)
   end
 
@@ -271,11 +271,25 @@ defmodule StbImage do
     end
   end
 
-  defp assert_write_type!(:u8), do: :ok
+  defp assert_write_type_and_format!(:u8, format) do
+    case format do
+      f when f in [:png, :jpg, :bmp, :tga] -> :ok
+      _ -> raise ArgumentError,
+      "Incompatible type and format, the u8 representation only available for png, jpg, bmp and tga images"
+    end
+  end
 
-  defp assert_write_type!(type) do
+  defp assert_write_type_and_format!(:f32, format) do
+    case format do
+      :hdr -> :ok
+      _ -> raise ArgumentError,
+      "Incompatible type and format, the float representation only available for hdr images"
+    end
+  end
+
+  defp assert_write_type_and_format!(_type, _format) do
     raise ArgumentError,
-          "StbImage can only write to_file/to_binary/resize u8 type, got: #{inspect(type)}"
+    "Unsupported combination of type and format"
   end
 
   defp format_from_path!(path) do
@@ -294,6 +308,9 @@ defmodule StbImage do
 
       ".tga" ->
         :tga
+
+      ".hdr" ->
+        :hdr
 
       ext ->
         raise "could not determine a supported encoding format for file #{inspect(path)} with extension #{inspect(ext)}, " <>

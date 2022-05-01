@@ -86,29 +86,31 @@ defmodule StbImageTest do
              [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]
   end
 
-  for ext <- ~w(bmp png tga jpg)a do
+  for ext <- ~w(bmp png tga jpg hdr)a do
     @ext ext
 
     test "save image #{@ext} to file" do
-      read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
+      type = if @ext == :hdr, do: :f32, else: :u8
+      read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"), type: type)
       {:ok, img} = read
       save_at = "tmp/save_test.#{@ext}"
 
       try do
         File.mkdir_p!("tmp")
         :ok = StbImage.to_file(img, save_at)
-        assert StbImage.from_file(save_at) == read
+        assert StbImage.from_file(save_at, type: type) == read
       after
         File.rm!(save_at)
       end
     end
 
     test "encode image as #{@ext} in memory" do
-      read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
+      type = if @ext == :hdr, do: :f32, else: :u8
+      read = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"), type: type)
       {:ok, img} = read
 
       {:ok, encoded} = StbImage.to_binary(img, @ext)
-      assert StbImage.from_binary(encoded) == read
+      assert StbImage.from_binary(encoded, type: type) == read
     end
   end
 
@@ -137,6 +139,13 @@ defmodule StbImageTest do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.jpg"), type: :f32)
     {:ok, resized_img} = StbImage.resize(img, 4, 6)
     assert resized_img.shape == {4, 6, 3}
+    assert resized_img.type == img.type
+  end
+
+  test "resize hdr as f32" do
+    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.hdr"), type: :f32)
+    {:ok, resized_img} = StbImage.resize(img, 192, 384)
+    assert resized_img.shape == {192, 384, 3}
     assert resized_img.type == img.type
   end
 end

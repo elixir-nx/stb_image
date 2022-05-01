@@ -229,6 +229,11 @@ static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
         if (!status) {
             return error(env, "failed to write jpg");
         }
+    } else if (strcmp(format, "hdr") == 0) {
+        int status = stbi_write_hdr(path, w, h, comp, (float*)result.data);
+        if (!status) {
+            return error(env, "failed to write hdr");
+        }
     } else {
         return error(env, "wrong format");
     }
@@ -362,6 +367,12 @@ static ERL_NIF_TERM to_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         finalize_write(&context, env, &binary);
         if (!status) {
             return error(env, "failed to write jpg");
+        }
+    } else if (strcmp(format, "hdr") == 0) {
+        int status = stbi_write_hdr_to_func(write_chunk, (void*) &context, w, h, comp, (float*)img.data);
+        finalize_write(&context, env, &binary);
+        if (!status) {
+            return error(env, "failed to write hdr");
         }
     } else {
         return error(env, "wrong format");

@@ -107,7 +107,7 @@ static ERL_NIF_TERM read_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM arg
     return ret;
 }
 
-static ERL_NIF_TERM gif_read_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 1) {
         return error(env, "expecting 1 argument: binary");
     }
@@ -451,7 +451,7 @@ static int on_upgrade(ErlNifEnv *_sth0, void **_sth1, void **_sth2, ERL_NIF_TERM
 static ErlNifFunc nif_functions[] = {
     {"read_file", 2, read_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"read_binary", 2, read_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
-    {"gif_read_binary", 1, gif_read_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
+    {"read_gif_binary", 1, read_gif_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"write_file", 6, write_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"to_binary", 5, to_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"resize", 7, resize, ERL_NIF_DIRTY_JOB_CPU_BOUND}};

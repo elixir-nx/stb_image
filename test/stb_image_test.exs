@@ -84,7 +84,7 @@ defmodule StbImageTest do
   end
 
   test "decode gif" do
-    {:ok, frames, delays} = StbImage.gif_read_file(Path.join(__DIR__, "test.gif"))
+    {:ok, frames, delays} = StbImage.read_gif_file(Path.join(__DIR__, "test.gif"))
     assert delays == [200, 200]
 
     assert Enum.all?(frames, &(&1.type == {:u, 8}))

@@ -193,14 +193,14 @@ defmodule StbImage do
 
   ## Example
 
-      {:ok, frames, delays} = StbImage.gif_read_file("/path/to/image")
+      {:ok, frames, delays} = StbImage.read_gif_file("/path/to/image")
       frame = Enum.at(frames, 0)
       {h, w, 3} = frame.shape
 
   """
-  def gif_read_file(path) when is_binary(path) or is_list(path) do
+  def read_gif_file(path) when is_binary(path) or is_list(path) do
     with {:ok, binary} <- File.read(path) do
-      gif_read_binary(binary)
+      read_gif_binary(binary)
     end
   end
 
@@ -210,13 +210,13 @@ defmodule StbImage do
   ## Example
 
       {:ok, buffer} = File.read("/path/to/image")
-      {:ok, frames, delays} = StbImage.gif_read_binary(buffer)
+      {:ok, frames, delays} = StbImage.read_gif_binary(buffer)
       frame = Enum.at(frames, 0)
       {h, w, 3} = frame.shape
 
   """
-  def gif_read_binary(binary) when is_binary(binary) do
-    with {:ok, frames, shape, delays} <- StbImage.Nif.gif_read_binary(binary) do
+  def read_gif_binary(binary) when is_binary(binary) do
+    with {:ok, frames, shape, delays} <- StbImage.Nif.read_gif_binary(binary) do
       stb_frames = for frame <- frames, do: %StbImage{data: frame, shape: shape, type: {:u, 8}}
 
       {:ok, stb_frames, delays}

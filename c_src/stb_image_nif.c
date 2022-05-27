@@ -43,9 +43,9 @@ static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char *data, int x, int y,
     }
 }
 
-static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 2) {
-        return error(env, "expecting 3 arguments: path and desired_channels");
+        return error(env, "expecting 2 arguments: path and desired_channels");
     }
 
     char path[MAX_NAME_LENGTH];
@@ -77,7 +77,7 @@ static ERL_NIF_TERM from_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     return ret;
 }
 
-static ERL_NIF_TERM from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+static ERL_NIF_TERM read_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 2) {
         return error(env, "expecting 2 arguments: binary and desired_channels");
     }
@@ -107,7 +107,7 @@ static ERL_NIF_TERM from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM arg
     return ret;
 }
 
-static ERL_NIF_TERM gif_from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 1) {
         return error(env, "expecting 1 argument: binary");
     }
@@ -177,7 +177,7 @@ static ERL_NIF_TERM gif_from_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
     }
 }
 
-static ERL_NIF_TERM to_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+static ERL_NIF_TERM write_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 6) {
         return error(env, "expecting 6 arguments: path, format, data, height, width, and number of channels");
     }
@@ -263,8 +263,8 @@ static void write_chunk(void *context_, void *data, int size) {
     void *chunk_data = enif_alloc(size);
 
     if (chunk == NULL || chunk_data == NULL) {
-        free(chunk);
-        free(chunk_data);
+        enif_free(chunk);
+        enif_free(chunk_data);
         context->out_of_memory = true;
         return;
     }
@@ -449,10 +449,10 @@ static int on_upgrade(ErlNifEnv *_sth0, void **_sth1, void **_sth2, ERL_NIF_TERM
 }
 
 static ErlNifFunc nif_functions[] = {
-    {"from_file", 2, from_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
-    {"from_binary", 2, from_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
-    {"gif_from_binary", 1, gif_from_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
-    {"to_file", 6, to_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"read_file", 2, read_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"read_binary", 2, read_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
+    {"read_gif_binary", 1, read_gif_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
+    {"write_file", 6, write_file, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"to_binary", 5, to_binary, ERL_NIF_DIRTY_JOB_CPU_BOUND},
     {"resize", 7, resize, ERL_NIF_DIRTY_JOB_CPU_BOUND}};
 

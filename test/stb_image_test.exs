@@ -11,7 +11,7 @@ defmodule StbImageTest do
   end
 
   test "decode png from file" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"))
+    img = StbImage.read_file!(Path.join(__DIR__, "test.png"))
     assert img.type == {:u, 8}
     assert img.shape == {2, 3, 4}
 
@@ -26,7 +26,7 @@ defmodule StbImageTest do
   end
 
   test "decode jpg from file" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.jpg"))
+    img = StbImage.read_file!(Path.join(__DIR__, "test.jpg"))
     assert img.type == {:u, 8}
     assert img.shape == {2, 3, 3}
 
@@ -41,7 +41,7 @@ defmodule StbImageTest do
   end
 
   test "decode hdr from file" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.hdr"))
+    img = StbImage.read_file!(Path.join(__DIR__, "test.hdr"))
     assert img.type == {:f, 32}
     assert img.shape == {384, 768, 3}
     assert is_binary(img.data)
@@ -53,7 +53,7 @@ defmodule StbImageTest do
 
   test "decode png from memory" do
     {:ok, binary} = File.read(Path.join(__DIR__, "test.png"))
-    {:ok, img} = StbImage.from_binary(binary)
+    img = StbImage.read_binary!(binary)
     assert img.type == {:u, 8}
     assert img.shape == {2, 3, 4}
 
@@ -67,7 +67,7 @@ defmodule StbImageTest do
 
   test "decode jpg from memory" do
     {:ok, binary} = File.read(Path.join(__DIR__, "test.jpg"))
-    {:ok, img} = StbImage.from_binary(binary)
+    img = StbImage.read_binary!(binary)
     assert img.type == {:u, 8}
     assert img.shape == {2, 3, 3}
 
@@ -81,7 +81,7 @@ defmodule StbImageTest do
 
   test "decode hdr from memory" do
     {:ok, binary} = File.read(Path.join(__DIR__, "test.hdr"))
-    {:ok, img} = StbImage.from_binary(binary)
+    img = StbImage.read_binary!(binary)
     assert img.type == {:f, 32}
     assert img.shape == {384, 768, 3}
     assert is_binary(img.data)
@@ -91,11 +91,11 @@ defmodule StbImageTest do
   end
 
   test "decode gif" do
-    {:ok, frames, delays} = StbImage.gif_from_file(Path.join(__DIR__, "test.gif"))
+    {:ok, frames, delays} = StbImage.read_gif_file(Path.join(__DIR__, "test.gif"))
     assert delays == [200, 200]
 
-    assert Enum.all?(frames, & &1.type == {:u, 8})
-    assert Enum.all?(frames, & &1.shape == {2, 3, 3})
+    assert Enum.all?(frames, &(&1.type == {:u, 8}))
+    assert Enum.all?(frames, &(&1.shape == {2, 3, 3}))
 
     assert Enum.map(frames, & &1.data) ==
              [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]
@@ -105,49 +105,67 @@ defmodule StbImageTest do
     @ext ext
 
     test "decode #{@ext} from file matches decode from binary" do
-      {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
-      assert StbImage.from_binary(File.read!(Path.join(__DIR__, "test.#{@ext}"))) == {:ok, img}
+      img = StbImage.read_file!(Path.join(__DIR__, "test.#{@ext}"))
+      assert StbImage.read_binary(File.read!(Path.join(__DIR__, "test.#{@ext}"))) == {:ok, img}
     end
 
     test "decode #{@ext} from file and encode to file" do
-      {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
+      img = StbImage.read_file!(Path.join(__DIR__, "test.#{@ext}"))
       save_at = "tmp/save_test.#{@ext}"
 
       try do
         File.mkdir_p!("tmp")
-        :ok = StbImage.to_file(img, save_at)
-        assert StbImage.from_file(save_at) == {:ok, img}
+        :ok = StbImage.write_file!(img, save_at)
+        assert StbImage.read_file(save_at) == {:ok, img}
       after
         File.rm!(save_at)
       end
     end
 
     test "decode #{@ext} from file and encode to binary" do
-      {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.#{@ext}"))
+      img = StbImage.read_file!(Path.join(__DIR__, "test.#{@ext}"))
 
-      {:ok, encoded} = StbImage.to_binary(img, @ext)
-      assert StbImage.from_binary(encoded) == {:ok, img}
+      encoded = StbImage.to_binary(img, @ext)
+      assert StbImage.read_binary(encoded) == {:ok, img}
     end
   end
 
   test "resize png" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"))
-    {:ok, resized_img} = StbImage.resize(img, 4, 6)
+    img = StbImage.read_file!(Path.join(__DIR__, "test.png"))
+    resized_img = StbImage.resize(img, 4, 6)
     assert resized_img.shape == {4, 6, 4}
     assert resized_img.type == img.type
   end
 
   test "resize jpg" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.jpg"))
-    {:ok, resized_img} = StbImage.resize(img, 4, 6)
+    img = StbImage.read_file!(Path.join(__DIR__, "test.jpg"))
+    resized_img = StbImage.resize(img, 4, 6)
     assert resized_img.shape == {4, 6, 3}
     assert resized_img.type == img.type
   end
 
   test "resize hdr" do
-    {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.hdr"))
-    {:ok, resized_img} = StbImage.resize(img, 192, 384)
+    img = StbImage.read_file!(Path.join(__DIR__, "test.hdr"))
+    resized_img = StbImage.resize(img, 192, 384)
     assert resized_img.shape == {192, 384, 3}
     assert resized_img.type == img.type
+  end
+
+  describe "errors" do
+    test "read_file" do
+      assert StbImage.read_file("unknown.jpg") == {:error, "could not open file"}
+
+      assert_raise ArgumentError, "could not open file", fn ->
+        StbImage.read_file!("unknown.jpg")
+      end
+    end
+
+    test "read_binary" do
+      assert StbImage.read_binary("") == {:error, "cannot decode image"}
+
+      assert_raise ArgumentError, "cannot decode image", fn ->
+        StbImage.read_binary!("")
+      end
+    end
   end
 end

@@ -161,7 +161,7 @@ defmodule StbImage do
       img = img.data
 
       # If you know the image is a 4-channel image and auto-detection failed
-      {:ok, img} = StbImage.read_file("/path/to/image", channels: 4)
+      {:ok, img} = StbImage.from_binary(buffer, channels: 4)
       {h, w, c} = img.shape
       img = img.data
 

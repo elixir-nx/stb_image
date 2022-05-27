@@ -74,7 +74,7 @@ defmodule StbImage do
   def to_nx(%StbImage{data: data, type: type, shape: shape}, opts \\ []) do
     data
     |> Nx.from_binary(type, opts)
-    |> Nx.reshape(shape)
+    |> Nx.reshape(shape, names: [:height, :width, :channels])
   end
 
   @doc """

@@ -3,6 +3,13 @@ defmodule StbImageTest do
 
   doctest StbImage
 
+  defp to_from_nx(img) do
+    img
+    |> StbImage.to_nx()
+    |> tap(fn %Nx.Tensor{names: [:height, :width, :channels]} -> :ok end)
+    |> StbImage.from_nx()
+  end
+
   test "decode png from file" do
     {:ok, img} = StbImage.from_file(Path.join(__DIR__, "test.png"))
     assert img.type == {:u, 8}
@@ -15,7 +22,7 @@ defmodule StbImageTest do
     assert StbImage.new(img.data, img.shape) == img
     assert StbImage.new(img.data, img.shape, type: :u8) == img
     assert StbImage.new(img.data, img.shape, type: {:u, 8}) == img
-    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
+    assert to_from_nx(img) == img
   end
 
   test "decode jpg from file" do
@@ -30,7 +37,7 @@ defmodule StbImageTest do
     assert StbImage.new(img.data, img.shape) == img
     assert StbImage.new(img.data, img.shape, type: :u8) == img
     assert StbImage.new(img.data, img.shape, type: {:u, 8}) == img
-    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
+    assert to_from_nx(img) == img
   end
 
   test "decode hdr from file" do
@@ -41,7 +48,7 @@ defmodule StbImageTest do
 
     assert StbImage.new(img.data, img.shape, type: :f32) == img
     assert StbImage.new(img.data, img.shape, type: {:f, 32}) == img
-    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
+    assert to_from_nx(img) == img
   end
 
   test "decode png from memory" do
@@ -55,7 +62,7 @@ defmodule StbImageTest do
                205, 145, 255, 144, 184, 200, 255>>
 
     assert StbImage.new(img.data, img.shape) == img
-    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
+    assert to_from_nx(img) == img
   end
 
   test "decode jpg from memory" do
@@ -69,7 +76,7 @@ defmodule StbImageTest do
                124>>
 
     assert StbImage.new(img.data, img.shape) == img
-    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
+    assert to_from_nx(img) == img
   end
 
   test "decode hdr from memory" do
@@ -80,7 +87,7 @@ defmodule StbImageTest do
     assert is_binary(img.data)
 
     assert StbImage.new(img.data, img.shape, type: {:f, 32}) == img
-    assert img |> StbImage.to_nx() |> tap(fn %Nx.Tensor{} -> :ok end) |> StbImage.from_nx() == img
+    assert to_from_nx(img) == img
   end
 
   test "decode gif" do

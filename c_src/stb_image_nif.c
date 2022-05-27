@@ -45,7 +45,7 @@ static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char *data, int x, int y,
 
 static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
     if (argc != 2) {
-        return error(env, "expecting 3 arguments: path and desired_channels");
+        return error(env, "expecting 2 arguments: path and desired_channels");
     }
 
     char path[MAX_NAME_LENGTH];

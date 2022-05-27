@@ -22,7 +22,7 @@ jobs:
 
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 24.1.5
+          otp-version: 24.3
           elixir-version: 1.13.3
 
       - name: Install system dependecies

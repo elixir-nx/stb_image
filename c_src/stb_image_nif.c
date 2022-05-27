@@ -263,8 +263,8 @@ static void write_chunk(void *context_, void *data, int size) {
     void *chunk_data = enif_alloc(size);
 
     if (chunk == NULL || chunk_data == NULL) {
-        free(chunk);
-        free(chunk_data);
+        enif_free(chunk);
+        enif_free(chunk_data);
         context->out_of_memory = true;
         return;
     }

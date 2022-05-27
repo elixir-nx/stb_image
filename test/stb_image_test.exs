@@ -87,8 +87,8 @@ defmodule StbImageTest do
     {:ok, frames, delays} = StbImage.gif_read_file(Path.join(__DIR__, "test.gif"))
     assert delays == [200, 200]
 
-    assert Enum.all?(frames, & &1.type == {:u, 8})
-    assert Enum.all?(frames, & &1.shape == {2, 3, 3})
+    assert Enum.all?(frames, &(&1.type == {:u, 8}))
+    assert Enum.all?(frames, &(&1.shape == {2, 3, 3}))
 
     assert Enum.map(frames, & &1.data) ==
              [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]

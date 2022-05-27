@@ -104,7 +104,7 @@ defmodule StbImage do
       )
 
   @doc """
-  Decodes image from file at `path`.
+  Reads image from file at `path`.
 
   ## Options
 
@@ -113,26 +113,40 @@ defmodule StbImage do
 
   ## Example
 
-      {:ok, img} = StbImage.from_file("/path/to/image")
+      {:ok, img} = StbImage.read_file("/path/to/image")
       {h, w, c} = img.shape
       data = img.data
 
       # If you know the image is a 4-channel image and auto-detection failed
-      {:ok, img} = StbImage.from_file("/path/to/image", channels: 4)
+      {:ok, img} = StbImage.read_file("/path/to/image", channels: 4)
       {h, w, c} = img.shape
       img = img.data
 
   """
-  def from_file(path, opts \\ []) when is_path(path) and is_list(opts) do
+  def read_file(path, opts \\ []) when is_path(path) and is_list(opts) do
     channels = opts[:channels] || 0
 
-    with {:ok, img, shape, bytes} <- StbImage.Nif.from_file(path_to_charlist(path), channels) do
-      {:ok, %StbImage{data: img, shape: shape, type: bytes_to_type(bytes)}}
+    case StbImage.Nif.read_file(path_to_charlist(path), channels) do
+      {:ok, img, shape, bytes} ->
+        {:ok, %StbImage{data: img, shape: shape, type: bytes_to_type(bytes)}}
+
+      {:error, reason} ->
+        {:error, List.to_string(reason)}
     end
   end
 
   @doc """
-  Decodes image from `binary` representing an image.
+  Raising version of `read_file/2`.
+  """
+  def read_file!(buffer, opts \\ []) do
+    case read_file(buffer, opts) do
+      {:ok, img} -> img
+      {:error, reason} -> raise ArgumentError, reason
+    end
+  end
+
+  @doc """
+  Reads image from `binary` representing an image.
 
   ## Options
 
@@ -142,37 +156,51 @@ defmodule StbImage do
   ## Example
 
       {:ok, buffer} = File.read("/path/to/image")
-      {:ok, img} = StbImage.from_binary(buffer)
+      {:ok, img} = StbImage.read_binary(buffer)
       {h, w, c} = img.shape
       img = img.data
 
       # If you know the image is a 4-channel image and auto-detection failed
-      {:ok, img} = StbImage.from_file("/path/to/image", channels: 4)
+      {:ok, img} = StbImage.read_file("/path/to/image", channels: 4)
       {h, w, c} = img.shape
       img = img.data
 
   """
-  def from_binary(buffer, opts \\ []) when is_binary(buffer) and is_list(opts) do
+  def read_binary(buffer, opts \\ []) when is_binary(buffer) and is_list(opts) do
     channels = opts[:channels] || 0
 
-    with {:ok, img, shape, bytes} <- StbImage.Nif.from_binary(buffer, channels) do
-      {:ok, %StbImage{data: img, shape: shape, type: bytes_to_type(bytes)}}
+    case StbImage.Nif.read_binary(buffer, channels) do
+      {:ok, img, shape, bytes} ->
+        {:ok, %StbImage{data: img, shape: shape, type: bytes_to_type(bytes)}}
+
+      {:error, reason} ->
+        {:error, List.to_string(reason)}
     end
   end
 
   @doc """
-  Decodes GIF image from file at `path`.
+  Raising version of `read_binary/2`.
+  """
+  def read_binary!(buffer, opts \\ []) do
+    case read_binary(buffer, opts) do
+      {:ok, img} -> img
+      {:error, reason} -> raise ArgumentError, reason
+    end
+  end
+
+  @doc """
+  Reads GIF image from file at `path`.
 
   ## Example
 
-      {:ok, frames, delays} = StbImage.gif_from_file("/path/to/image")
+      {:ok, frames, delays} = StbImage.gif_read_file("/path/to/image")
       frame = Enum.at(frames, 0)
       {h, w, 3} = frame.shape
 
   """
-  def gif_from_file(path) when is_binary(path) or is_list(path) do
+  def gif_read_file(path) when is_binary(path) or is_list(path) do
     with {:ok, binary} <- File.read(path) do
-      gif_from_binary(binary)
+      gif_read_binary(binary)
     end
   end
 
@@ -182,13 +210,13 @@ defmodule StbImage do
   ## Example
 
       {:ok, buffer} = File.read("/path/to/image")
-      {:ok, frames, delays} = StbImage.gif_from_binary(buffer)
+      {:ok, frames, delays} = StbImage.gif_read_binary(buffer)
       frame = Enum.at(frames, 0)
       {h, w, 3} = frame.shape
 
   """
-  def gif_from_binary(binary) when is_binary(binary) do
-    with {:ok, frames, shape, delays} <- StbImage.Nif.gif_from_binary(binary) do
+  def gif_read_binary(binary) when is_binary(binary) do
+    with {:ok, frames, shape, delays} <- StbImage.Nif.gif_read_binary(binary) do
       stb_frames = for frame <- frames, do: %StbImage{data: frame, shape: shape, type: {:u, 8}}
 
       {:ok, stb_frames, delays}
@@ -199,7 +227,7 @@ defmodule StbImage do
   @encoding_formats_string Enum.map_join(@encoding_formats, ", ", &inspect/1)
 
   @doc """
-  Saves image to the file at `path`.
+  Writes image to the file at `path`.
 
   The supported formats are #{@encoding_formats_string}.
 
@@ -216,11 +244,25 @@ defmodule StbImage do
     * `:format` - one of the supported image formats
 
   """
-  def to_file(%StbImage{data: data, shape: shape, type: type}, path, opts \\ []) do
+  def write_file(%StbImage{data: data, shape: shape, type: type}, path, opts \\ []) do
     {height, width, channels} = shape
     format = opts[:format] || format_from_path!(path)
     assert_write_type_and_format!(type, format)
-    StbImage.Nif.to_file(path_to_charlist(path), format, data, height, width, channels)
+
+    case StbImage.Nif.write_file(path_to_charlist(path), format, data, height, width, channels) do
+      :ok -> :ok
+      {:error, reason} -> {:error, List.to_string(reason)}
+    end
+  end
+
+  @doc """
+  Raising version of `write_file/3`.
+  """
+  def write_file!(image, path, opts \\ []) do
+    case write_file(image, path, opts) do
+      :ok -> :ok
+      {:error, reason} -> raise ArgumentError, reason
+    end
   end
 
   @doc """
@@ -228,18 +270,20 @@ defmodule StbImage do
 
   The supported formats are #{@encoding_formats_string}.
 
-  Returns `{:ok, binary}` on success and `{:error, reason}` otherwise.
-
   ## Example
 
       img = StbImage.new(raw_img, {h, w, channels})
-      {:ok, binary} = StbImage.to_binary(img, :png)
+      binary = StbImage.to_binary(img, :png)
 
   """
   def to_binary(%StbImage{data: data, shape: shape, type: type}, format) do
     assert_write_type_and_format!(type, format)
     {height, width, channels} = shape
-    StbImage.Nif.to_binary(format, data, height, width, channels)
+
+    case StbImage.Nif.to_binary(format, data, height, width, channels) do
+      {:ok, binary} -> binary
+      {:error, reason} -> raise ArgumentError, "#{reason}"
+    end
   end
 
   @doc """
@@ -248,7 +292,7 @@ defmodule StbImage do
   ## Example
 
       img = StbImage.new(raw_img, {h, w, channels})
-      {:ok, resized_img} = StbImage.resize(raw_img, div(h, 2), div(w, 2))
+      StbImage.resize(raw_img, div(h, 2), div(w, 2))
 
   """
   def resize(
@@ -257,9 +301,12 @@ defmodule StbImage do
         output_w
       )
       when is_dimension(output_h) and is_dimension(output_w) do
-    with {:ok, output_pixels} <-
-           StbImage.Nif.resize(data, height, width, channels, output_h, output_w, bytes(type)) do
-      {:ok, %StbImage{data: output_pixels, shape: {output_h, output_w, channels}, type: type}}
+    case StbImage.Nif.resize(data, height, width, channels, output_h, output_w, bytes(type)) do
+      {:ok, output_pixels} ->
+        %StbImage{data: output_pixels, shape: {output_h, output_w, channels}, type: type}
+
+      {:error, reason} ->
+        raise ArgumentError, "#{reason}"
     end
   end
 

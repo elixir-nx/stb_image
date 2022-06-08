@@ -152,10 +152,10 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
 
         if (!ok) {
             STBI_FREE((void *)data);
+            STBI_FREE((void *)delays);
             enif_free((void *)frames_term);
             enif_free((void *)delays_term);
             enif_free((void *)frames_result);
-            enif_free((void *)delays);
             return error(env, "out of memory");
         }
 
@@ -170,10 +170,10 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
                                                                  enif_make_int(env, 3)),
                                                 delays_ret);
         STBI_FREE((void *)data);
+        STBI_FREE((void *)delays);
         enif_free((void *)frames_term);
         enif_free((void *)delays_term);
         enif_free((void *)frames_result);
-        enif_free((void *)delays);
         return ret_val;
     } else {
         return enif_make_badarg(env);

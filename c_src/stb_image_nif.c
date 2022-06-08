@@ -5,31 +5,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #define STBI_MALLOC enif_alloc
-static void * nif_realloc(void *ptr, size_t oldsz, size_t newsz) {
-    // follow man(3) realloc
-    //
-    // If size is zero and ptr is not NULL, a new,
-    // minimum sized object is allocated and 
-    // the original object is freed.
-    if (newsz == 0 && ptr) newsz = oldsz;
-    // realloc() creates a new allocation
-    void * new_p = enif_alloc(newsz);
-    if (new_p) {
-        // If ptr is NULL, realloc() is identical to a call to
-        // malloc() for size bytes.
-        if (ptr != NULL) {
-            // copies as much of the old data pointed to by ptr
-            // as will fit to the new allocation
-            size_t sz = oldsz;
-            if (newsz < sz) sz = newsz;
-            memcpy(new_p, ptr, sz);
-            // frees the old allocation
-            enif_free(ptr);
-        }
-    }
-    return new_p;
-}
-#define STBI_REALLOC_SIZED nif_realloc
+#define STBI_REALLOC enif_realloc
 #define STBI_FREE enif_free
 #include <stb_image.h>
 #include <stb_image_write.h>

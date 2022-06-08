@@ -1,8 +1,36 @@
 #include <erl_nif.h>
+#include <string.h>
 #define STBI_NO_FAILURE_STRINGS
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
+#define STBI_MALLOC enif_alloc
+static void * nif_realloc(void *ptr, size_t oldsz, size_t newsz) {
+    // follow man(3) realloc
+    //
+    // If size is zero and ptr is not NULL, a new,
+    // minimum sized object is allocated and 
+    // the original object is freed.
+    if (newsz == 0 && ptr) newsz = oldsz;
+    // realloc() creates a new allocation
+    void * new_p = enif_alloc(newsz);
+    if (new_p) {
+        // If ptr is NULL, realloc() is identical to a call to
+        // malloc() for size bytes.
+        if (ptr != NULL) {
+            // copies as much of the old data pointed to by ptr
+            // as will fit to the new allocation
+            size_t sz = oldsz;
+            if (newsz < sz) sz = newsz;
+            memcpy(new_p, ptr, sz);
+            // frees the old allocation
+            enif_free(ptr);
+        }
+    }
+    return new_p;
+}
+#define STBI_REALLOC_SIZED nif_realloc
+#define STBI_FREE enif_free
 #include <stb_image.h>
 #include <stb_image_write.h>
 #include <stb_image_resize.h>
@@ -73,7 +101,7 @@ static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     }
 
     ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel);
-    free((void *)data);
+    STBI_FREE((void *)data);
     return ret;
 }
 
@@ -103,7 +131,7 @@ static ERL_NIF_TERM read_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM arg
     }
 
     ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel);
-    free((void *)data);
+    STBI_FREE((void *)data);
     return ret;
 }
 
@@ -124,9 +152,9 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
             return error(env, "cannot decode the given GIF file");
         }
 
-        ERL_NIF_TERM *delays_term = (ERL_NIF_TERM *)malloc(sizeof(ERL_NIF_TERM) * z);
-        ERL_NIF_TERM *frames_term = (ERL_NIF_TERM *)malloc(sizeof(ERL_NIF_TERM) * z);
-        ErlNifBinary *frames_result = (ErlNifBinary *)malloc(sizeof(ErlNifBinary) * z);
+        ERL_NIF_TERM *delays_term = (ERL_NIF_TERM *)enif_alloc(sizeof(ERL_NIF_TERM) * z);
+        ERL_NIF_TERM *frames_term = (ERL_NIF_TERM *)enif_alloc(sizeof(ERL_NIF_TERM) * z);
+        ErlNifBinary *frames_result = (ErlNifBinary *)enif_alloc(sizeof(ErlNifBinary) * z);
         bool ok = true;
         unsigned char *start = data;
         size_t offset = x * y * sizeof(unsigned char);
@@ -148,11 +176,11 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
         }
 
         if (!ok) {
-            free((void *)data);
-            free((void *)frames_term);
-            free((void *)delays_term);
-            free((void *)frames_result);
-            free((void *)delays);
+            STBI_FREE((void *)data);
+            enif_free((void *)frames_term);
+            enif_free((void *)delays_term);
+            enif_free((void *)frames_result);
+            enif_free((void *)delays);
             return error(env, "out of memory");
         }
 
@@ -166,11 +194,11 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
                                                                  enif_make_int(env, x),
                                                                  enif_make_int(env, 3)),
                                                 delays_ret);
-        free((void *)data);
-        free((void *)frames_term);
-        free((void *)delays_term);
-        free((void *)frames_result);
-        free((void *)delays);
+        STBI_FREE((void *)data);
+        enif_free((void *)frames_term);
+        enif_free((void *)delays_term);
+        enif_free((void *)frames_result);
+        enif_free((void *)delays);
         return ret_val;
     } else {
         return enif_make_badarg(env);

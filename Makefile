@@ -19,4 +19,4 @@ build: $(STB_IMAGE_NIF_SO)
 
 $(STB_IMAGE_NIF_SO): $(C_SRC)/nif_utils.h $(C_SRC)/stb_image_nif.c
 	@ mkdir -p $(PRIV_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(C_SRC)/stb_image_nif.c -o $(STB_IMAGE_NIF_SO)
+	$(CC) $(CPPFLAGS) $(C_SRC)/stb_image_nif.c -o $(STB_IMAGE_NIF_SO)

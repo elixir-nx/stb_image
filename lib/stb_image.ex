@@ -237,7 +237,7 @@ defmodule StbImage do
   Returns `:ok` on success and `{:error, reason}` otherwise.
 
   Make sure the directory you intend to write the file to exists.
-  Otherwise, an error occurs.
+  Otherwise, an error is returned.
 
   ## Options
 

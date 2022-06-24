@@ -1,6 +1,6 @@
 defmodule StbImage do
   @moduledoc """
-  Tiny image encoding and decoding.
+  Tiny module for image encoding and decoding.
 
   The following formats are supported and have type u8:
 
@@ -29,7 +29,7 @@ defmodule StbImage do
     * `:shape` - a tuple with the `{height, width, channels}`
     * `:type` - the type unit in the binary (`{:u, 8}` or `{:f, 32}`)
 
-  The number of channels correlate directly to the color mode.
+  The number of channels correlates directly to the color mode.
   1 channel is greyscale, 2 is greyscale+alpha, 3 is RGB, and
   4 is RGB+alpha.
   """
@@ -60,7 +60,7 @@ defmodule StbImage do
       %StbImage{data: data, shape: shape, type: type}
     else
       raise ArgumentError,
-            "cannot create StbImage because number of bytes do not match shape and type"
+            "cannot create StbImage because the number of bytes does not match the shape and type"
     end
   end
 
@@ -80,7 +80,7 @@ defmodule StbImage do
   @doc """
   Creates a `StbImage` from a Nx tensor.
 
-  The tensor is expected to have shape `{h, w, c}`
+  The tensor is expected to have the shape `{h, w, c}`
   and one of the supported types (u8/f32).
   """
   def from_nx(tensor) when is_struct(tensor, Nx.Tensor) do
@@ -117,7 +117,7 @@ defmodule StbImage do
       {h, w, c} = img.shape
       data = img.data
 
-      # If you know the image is a 4-channel image and auto-detection failed
+      # If you know that the image is a 4-channel image and auto-detection failed
       {:ok, img} = StbImage.read_file("/path/to/image", channels: 4)
       {h, w, c} = img.shape
       img = img.data
@@ -160,8 +160,8 @@ defmodule StbImage do
       {h, w, c} = img.shape
       img = img.data
 
-      # If you know the image is a 4-channel image and auto-detection failed
-      {:ok, img} = StbImage.from_binary(buffer, channels: 4)
+      # If you know that the image is a 4-channel image and auto-detection failed
+      {:ok, img} = StbImage.read_binary(buffer, channels: 4)
       {h, w, c} = img.shape
       img = img.data
 
@@ -231,13 +231,13 @@ defmodule StbImage do
 
   The supported formats are #{@encoding_formats_string}.
 
-  The format is determined from the file extension if possible,
-  you can also pass it explicitly via the `:format` option.
+  The format is determined from the file extension, if possible.
+  You can also pass it explicitly via the `:format` option.
 
   Returns `:ok` on success and `{:error, reason}` otherwise.
 
-  Make sure the directory you intend to write the file to exists,
-  otherwise an error is returned.
+  Make sure the directory you intend to write the file to exists.
+  Otherwise, an error occurs.
 
   ## Options
 

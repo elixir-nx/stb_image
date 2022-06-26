@@ -26,7 +26,7 @@ defmodule StbImage.MixProject do
 
   defp deps do
     [
-      {:elixir_make, "~> 0.6"},
+      {:elixir_make, "~> 0.6", runtime: false},
       {:nx, "~> 0.1", optional: true},
       {:ex_doc, "~> 0.23", only: :docs, runtime: false}
     ]

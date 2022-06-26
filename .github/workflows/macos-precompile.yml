@@ -19,7 +19,7 @@ jobs:
               triplet: x86_64-apple-darwin
           - pair:
               triplet: arm64-apple-darwin
-              cxx_flags: "-arch arm64"
+              cpp_flags: "-arch arm64"
 
     steps:
       - uses: actions/checkout@v3
@@ -32,8 +32,8 @@ jobs:
 
       - name: Create precompiled library
         run: |
-          if [ "${{ matrix.pair.cxx_flags }}" != "" ]; then
-            export CXXFLAGS="${{ matrix.pair.cxx_flags }}"
+          if [ "${{ matrix.pair.cpp_flags }}" != "" ]; then
+            export CPPFLAGS="${{ matrix.pair.cpp_flags }}"
           fi
           mix deps.get
           mix compile

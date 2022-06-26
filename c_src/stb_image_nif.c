@@ -77,6 +77,7 @@ static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
 
     ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel);
     STBI_FREE((void *)data);
+    fclose(f);
     return ret;
 }
 

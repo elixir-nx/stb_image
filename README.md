@@ -11,10 +11,27 @@ Add `stb_image` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:stb_image, "~> 0.5.1"}
+    {:stb_image, "~> 0.5.3"}
   ]
 end
 ```
+
+This library also provides some precompiled binaries for the following platforms:
+- x86_64-apple-darwin
+- arm64-apple-darwin
+- x86_64-linux-gnu
+- aarch64-linux-gnu
+- arm-linux-gnueabihf
+- riscv64-linux-gnu
+- s390x-linux-gnu
+- ppc64le-linux-gnu
+
+Precompiled binaries will be used by default if they are available. However, you can disable this behaviour by setting the `STB_IMAGE_PREFER_PRECOMPILED` environment variable to `NO`.
+
+The `ARCH-OS-ABI` is detected in the following order:
+1. `ARCH-OS-ABI` is set in the environment variable `STB_IMAGE_HOST`. By setting this environment variable, you can force the use of a specific precompiled binary.
+2. `TARGET_ARCH`, `TARGET_OS`, `TARGET_ABI` are all set in the environment.
+3. When `uname` is available, it will be used to determine the architecture and OS.
 
 ## License
 

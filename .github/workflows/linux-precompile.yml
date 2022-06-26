@@ -1,0 +1,88 @@
+name: linux-precompile
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  precompile:
+    runs-on: ubuntu-20.04
+    env:
+      STB_IMAGE_PREFER_PRECOMPILED: "NO"
+      MIX_ENV: "dev"
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - pair:
+              triplet: x86_64-linux-gnu
+              c_compiler: gcc
+              cpp_compiler: g++
+          - pair:
+              triplet: aarch64-linux-gnu
+              c_compiler: gcc-aarch64-linux-gnu
+              cpp_compiler: g++-aarch64-linux-gnu
+              cc: "/usr/bin/aarch64-linux-gnu-gcc"
+              cxx: "/usr/bin/aarch64-linux-gnu-g++"
+          - pair:
+              triplet: arm-linux-gnueabihf
+              c_compiler: gcc-arm-linux-gnueabihf
+              cpp_compiler: g++-arm-linux-gnueabihf
+              cc: "/usr/bin/arm-linux-gnueabihf-gcc-9"
+              cxx: "/usr/bin/arm-linux-gnueabihf-g++-9"
+          - pair:
+              triplet: riscv64-linux-gnu
+              c_compiler: gcc-riscv64-linux-gnu
+              cpp_compiler: g++-riscv64-linux-gnu
+              cc: "/usr/bin/riscv64-linux-gnu-gcc"
+              cxx: "/usr/bin/riscv64-linux-gnu-g++"
+          - pair:
+              triplet: s390x-linux-gnu
+              c_compiler: gcc-s390x-linux-gnu
+              cpp_compiler: g++-s390x-linux-gnu
+              cc: "/usr/bin/s390x-linux-gnu-gcc"
+              cxx: "/usr/bin/s390x-linux-gnu-g++"
+          - pair:
+              triplet: powerpc64le-linux-gnu
+              c_compiler: gcc-powerpc64le-linux-gnu
+              cpp_compiler: g++-powerpc64le-linux-gnu
+              cc: "/usr/bin/powerpc64le-linux-gnu-gcc"
+              cxx: "/usr/bin/powerpc64le-linux-gnu-g++"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "25.0.2"
+          elixir-version: "1.13.4"
+
+      - name: Install system dependecies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential automake autoconf pkg-config bc m4 unzip zip curl git libssl-dev gzip libncurses5-dev ca-certificates ${{ matrix.pair.c_compiler }} ${{ matrix.pair.cpp_compiler }}
+
+      - name: Create precompiled library
+        run: |
+          if [ "${{ matrix.pair.cmake_toolchain_file }}" != "" ]; then
+            export CC="${{ matrix.pair.cc }}"
+            export CXX="${{ matrix.pair.cxx }}"
+          fi
+          echo "CC: ${CC}"
+          echo "CXX: ${CXX}"
+          mix deps.get
+          mix compile
+          export PKG_NAME=stb_image-${{ matrix.pair.triplet }}-${GITHUB_REF##*/}
+          mkdir -p "${PKG_NAME}"
+          cp -a _build/${MIX_ENV}/lib/stb_image/priv "${PKG_NAME}"
+          zip -r -9 -y "${PKG_NAME}.zip" "${PKG_NAME}"
+          rm -rf "${PKG_NAME}"
+          ls -lah "${PKG_NAME}.zip"
+          mkdir -p artifacts
+          mv "${PKG_NAME}.zip" artifacts
+
+      - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: artifacts/stb_image-*.zip

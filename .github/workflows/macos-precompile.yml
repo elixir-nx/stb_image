@@ -40,7 +40,9 @@ jobs:
           export PKG_NAME=stb_image-${{ matrix.pair.triplet }}-${GITHUB_REF##*/}
           mkdir -p "${PKG_NAME}"
           cp -a _build/${MIX_ENV}/lib/stb_image/priv "${PKG_NAME}"
-          zip -r -9 -y "${PKG_NAME}.zip" "${PKG_NAME}"
+          cd "${PKG_NAME}/priv/"
+          zip -r -9 -y "../../${PKG_NAME}.zip" "."
+          cd ../../
           rm -rf "${PKG_NAME}"
           ls -lah "${PKG_NAME}.zip"
           mkdir -p artifacts

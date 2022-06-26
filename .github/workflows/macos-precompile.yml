@@ -24,6 +24,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install Erlang and Elixir
+        run: |
+          brew install erlang elixir
+          mix local.hex --force
+          mix local.rebar --force
+
       - name: Create precompiled library
         run: |
           if [ "${{ matrix.pair.cxx_flags }}" != "" ]; then

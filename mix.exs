@@ -47,7 +47,7 @@ defmodule StbImage.MixProject do
   defp package() do
     [
       name: "stb_image",
-      files: ~w(3rd_party/stb c_src lib mix.exs README* LICENSE* Makefile),
+      files: ~w(3rd_party/stb c_src lib mix.exs README* LICENSE* Makefile precompiled_deploy.exs),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => github_url()}
     ]

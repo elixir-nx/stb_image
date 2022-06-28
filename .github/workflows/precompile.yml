@@ -7,19 +7,18 @@ on:
 
 jobs:
   precompile:
-    runs-on: ubuntu-20.04
+    runs-on: macos-11
     env:
       MIX_ENV: "dev"
 
     steps:
       - uses: actions/checkout@v3
 
-      - uses: erlef/setup-beam@v1
-        with:
-          otp-version: "25.0.2"
-          elixir-version: "1.13.4"
-
-      - uses: goto-bus-stop/setup-zig@v1
+      - name: Install Erlang/OTP, Elixir and Zig
+        run: |
+          brew install erlang elixir zig
+          mix local.hex --force
+          mix local.rebar --force
 
       - name: Create precompiled library
         run: |

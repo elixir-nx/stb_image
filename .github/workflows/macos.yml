@@ -26,9 +26,9 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Compile and Test
+      - name: Compile with elixir_make and Test
         run: |
           mix deps.get
           mix deps.compile
-          mix compile
+          mix compile.elixir_make
           mix test

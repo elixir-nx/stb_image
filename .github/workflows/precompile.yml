@@ -25,7 +25,7 @@ jobs:
           export FENNEC_CACHE_DIR=$(pwd)/fennec_precompile
           mkdir -p "${FENNEC_CACHE_DIR}"
           mix deps.get
-          mix compile --fennec_precompile
+          mix fennec.precompile
 
       - uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')

@@ -1,16 +1,11 @@
 defmodule StbImage.Nif do
   @moduledoc false
 
-  @on_load :load_nif
-  def load_nif do
-    nif_file = '#{:code.priv_dir(:stb_image)}/stb_image_nif'
-
-    case :erlang.load_nif(nif_file, 0) do
-      :ok -> :ok
-      {:error, {:reload, _}} -> :ok
-      {:error, reason} -> IO.puts("Failed to load nif: #{reason}")
-    end
-  end
+  version = Mix.Project.config()[:version]
+  use FennecPrecompile,
+    base_url: "https://github.com/elixir-nx/stb_image/releases/download/v#{version}",
+    version: version,
+    nif_filename: "stb_image_nif"
 
   def read_file(_path, _desired_channels),
     do: :erlang.nif_error(:not_loaded)

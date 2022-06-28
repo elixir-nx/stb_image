@@ -26,7 +26,7 @@ defmodule StbImage.MixProject do
 
   defp deps do
     [
-      {:fennec_precompile, "~> 0.1.0", github: "cocoa-xu/fennec_precompile"},
+      {:fennec_precompile, "~> 0.1.0"},
       {:nx, "~> 0.1", optional: true},
       {:ex_doc, "~> 0.23", only: :docs, runtime: false}
     ]

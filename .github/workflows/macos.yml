@@ -15,7 +15,6 @@ jobs:
   mix_test:
     runs-on: macos-11
     env:
-      STB_IMAGE_PREFER_PRECOMPILED: "NO"
       MIX_ENV: test
 
     steps:

@@ -15,7 +15,6 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     env:
-      STB_IMAGE_PREFER_PRECOMPILED: "NO"
       MIX_ENV: test
 
     steps:

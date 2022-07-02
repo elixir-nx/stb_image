@@ -3,6 +3,8 @@ defmodule StbImage.Nif do
 
   version = Mix.Project.config()[:version]
   use FennecPrecompile,
+    otp_app: :stb_image,
+    force_build: false,
     base_url: "https://github.com/elixir-nx/stb_image/releases/download/v#{version}",
     version: version,
     nif_filename: "stb_image_nif"

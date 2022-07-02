@@ -14,7 +14,9 @@ defmodule StbImage.MixProject do
       description: "A tiny image reader/writer library using stb_image as the backend",
       docs: docs(),
       package: package(),
-      compilers: Mix.compilers()
+      compilers: [:fennec_precompile] ++ Mix.compilers(),
+      fennec_nif_filename: "stb_image_nif",
+      fennec_base_url: "https://github.com/elixir-nx/stb_image/releases/download/v#{@version}"
     ]
   end
 
@@ -26,7 +28,7 @@ defmodule StbImage.MixProject do
 
   defp deps do
     [
-      {:fennec_precompile, "~> 0.1", github: "cocoa-xu/fennec_precompile"},
+      {:fennec_precompile, "~> 0.1", runtime: false},
       {:nx, "~> 0.1", optional: true},
       {:ex_doc, "~> 0.23", only: :docs, runtime: false}
     ]

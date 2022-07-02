@@ -29,6 +29,14 @@ jobs:
       - name: Compile with elixir_make and Test
         run: |
           mix deps.get
-          mix deps.compile
-          mix compile.elixir_make
+          mkdir -p config
+          cat <<EOF | tee config/config.exs
+          import Config
+
+          config :fennec_precompile, :config, fennec_example: [
+            fennec_force_build: true,
+            fennec_targets: ["x86_64-macos"]
+          ]
+          EOF
+          mix compile
           mix test

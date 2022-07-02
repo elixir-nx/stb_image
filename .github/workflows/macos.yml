@@ -33,7 +33,7 @@ jobs:
           cat <<EOF | tee config/config.exs
           import Config
 
-          config :fennec_precompile, :config, fennec_example: [
+          config :fennec_precompile, :config, stb_image: [
             fennec_force_build: true,
             fennec_targets: ["x86_64-macos"]
           ]

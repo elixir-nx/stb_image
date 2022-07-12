@@ -400,7 +400,7 @@ static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
         return error(env, "invalid image");
     }
     if(!enif_get_int(env, argv[1], &input_h)) {
-        return error(env, "invalid input heigth");
+        return error(env, "invalid input height");
     }
     if(!enif_get_int(env, argv[2], &input_w)) {
         return error(env, "invalid input width");

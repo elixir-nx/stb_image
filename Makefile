@@ -10,7 +10,7 @@ CPPFLAGS += -I$(ERTS_INCLUDE_DIR) -I$(STB_INCLUDE_DIR)
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-	CPPFLAGS += -shared -undefined dynamic_lookup -flat_namespace -undefined suppress
+	CPPFLAGS += -undefined dynamic_lookup -flat_namespace -undefined suppress
 endif
 
 .DEFAULT_GLOBAL := build

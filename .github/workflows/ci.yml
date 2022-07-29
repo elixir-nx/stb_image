@@ -1,0 +1,62 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - '**/README.md'
+      - 'LICENSE*'
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ubuntu-20.04
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v3
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 25.0.3
+          elixir-version: 1.13.4
+      - name: Compile and Test
+        run: |
+          mix deps.get
+          mix test
+
+  windows:
+    runs-on: windows-latest
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v3
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 25.0.2
+          elixir-version: 1.13.4
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Compile and Test
+        run: |
+          mix deps.get
+          mix test
+
+  macos:
+    runs-on: macos-11
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v3
+      - name: macOS setup
+        run: |
+          brew install erlang elixir
+          mix local.hex --force
+          mix local.rebar --force
+      - name: Compile and Test
+        run: |
+          mix deps.get
+          mix test

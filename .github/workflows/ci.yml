@@ -37,6 +37,9 @@ jobs:
         with:
           otp-version: 25.0.2
           elixir-version: 1.13.4
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
       - name: Compile and Test
         run: |
           mix deps.get

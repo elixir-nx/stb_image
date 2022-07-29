@@ -291,7 +291,7 @@ static void write_chunk(void *context_, void *data, int size) {
 
 static void finalize_write(WriteContext *context, ErlNifEnv *env, ERL_NIF_TERM *binary) {
     if (!context->out_of_memory) {
-        void *buffer = enif_make_new_binary(env, context->size, binary);
+        char *buffer = (char *)enif_make_new_binary(env, context->size, binary);
 
         if (buffer == NULL) {
             context->out_of_memory = true;

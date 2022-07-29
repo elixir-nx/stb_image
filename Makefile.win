@@ -1,0 +1,16 @@
+PRIV_DIR = $(MIX_APP_PATH)/priv
+STB_IMAGE_NIF_SO = $(PRIV_DIR)/stb_image_nif.dll
+
+C_SRC = $(MAKEDIR)/c_src
+LIB_SRC = $(MAKEDIR)/lib
+THIRD_PARTY = $(MAKEDIR)/3rd_party
+STB_INCLUDE_DIR = $(THIRD_PARTY)/stb
+CPPFLAGS = /O2 /EHsc /I"$(ERTS_INCLUDE_DIR)" /I"$(STB_INCLUDE_DIR)"
+
+build: $(STB_IMAGE_NIF_SO)
+
+$(STB_IMAGE_NIF_SO):
+	@ if not exist "$(PRIV_DIR)" mkdir "$(PRIV_DIR)"
+	$(CC) $(CPPFLAGS) /LD /MD /Fe$@ $(C_SRC)/stb_image_nif.c 
+
+.PHONY: all

@@ -15,7 +15,6 @@ defmodule StbImage.MixProject do
       description: "A tiny image reader/writer library using stb_image as the backend",
       docs: docs(),
       package: package(),
-      make_executable: make_executable(),
       make_makefile: make_makefile()
     ]
   end
@@ -51,16 +50,14 @@ defmodule StbImage.MixProject do
     ]
   end
 
-  defp make_executable() do
-    case :os.type() do
-      {:win32, _} -> "nmake"
-      _ -> "make"
-    end
-  end
-
   defp make_makefile() do
     case :os.type() do
-      {:win32, _} -> "Makefile.win"
+      {:win32, _} -> 
+        cond do
+          System.find_executable("nmake") -> "Makefile.win"
+          System.find_executable("make") -> "Makefile.mingw"
+          true -> "Makefile.win"
+        end
       _ -> "Makefile"
     end
   end

@@ -1,7 +1,7 @@
 defmodule StbImage.MixProject do
   use Mix.Project
 
-  @version "0.5.2"
+  @version "0.5.3"
   @github_url "https://github.com/elixir-nx/stb_image"
 
   def project do
@@ -9,14 +9,17 @@ defmodule StbImage.MixProject do
       app: :stb_image,
       version: @version,
       elixir: "~> 1.12",
-      compilers: [:elixir_make] ++ Mix.compilers(),
       deps: deps(),
       name: "StbImage",
       description: "A tiny image reader/writer library using stb_image as the backend",
       docs: docs(),
       package: package(),
       make_executable: make_executable(),
-      make_makefile: make_makefile()
+      make_makefile: make_makefile(),
+      compilers: [:elixir_make] ++ Mix.compilers(),
+      make_precompiler: CCPrecompiler,
+      make_precompiled_url: "https://github.com/elixir-nx/stb_image/releases/download/v#{@version}/@{artefact_filename}",
+      make_nif_filename: "stb_image_nif"
     ]
   end
 
@@ -28,7 +31,7 @@ defmodule StbImage.MixProject do
 
   defp deps do
     [
-      {:elixir_make, "~> 0.6"},
+      {:cc_precompiler, "~> 0.1.0", runtime: false, github: "cocoa-xu/cc_precompiler"},
       {:nx, "~> 0.1", optional: true},
       {:ex_doc, "~> 0.23", only: :docs, runtime: false}
     ]
@@ -45,7 +48,7 @@ defmodule StbImage.MixProject do
   defp package() do
     [
       name: "stb_image",
-      files: ~w(3rd_party/stb c_src lib mix.exs README* LICENSE* Makefile),
+      files: ~w(3rd_party/stb c_src lib mix.exs README* LICENSE* Makefile checksum-*.exs),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @github_url}
     ]

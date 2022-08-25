@@ -11,10 +11,23 @@ Add `stb_image` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:stb_image, "~> 0.5.1"}
+    {:stb_image, "~> 0.5.3"}
   ]
 end
 ```
+
+This library also provides some precompiled binaries for the following platforms:
+- macOS
+  - x86_64-macos
+  - aarch64-macos
+- Linux
+  - x86_64-linux-gnu
+  - x86_64-linux-musl
+  - aarch64-linux-gnu
+  - aarch64-linux-musl
+  - riscv64-linux-musl
+- Windows
+  - x86_64-windows-gnu
 
 ## License
 

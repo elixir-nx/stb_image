@@ -25,7 +25,7 @@ jobs:
       - name: Compile and Test
         run: |
           mix deps.get
-          mix compile
+          mix elixir_make.precompile
           mix test
 
   windows:
@@ -44,7 +44,7 @@ jobs:
       - name: Compile and Test
         run: |
           mix deps.get
-          mix compile
+          mix elixir_make.precompile
           mix test
 
   macos:
@@ -61,5 +61,5 @@ jobs:
       - name: Compile and Test
         run: |
           mix deps.get
-          mix compile
+          mix elixir_make.precompile
           mix test

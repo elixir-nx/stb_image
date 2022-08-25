@@ -18,7 +18,8 @@ defmodule StbImage.MixProject do
       make_makefile: make_makefile(),
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_precompiler: CCPrecompiler,
-      make_precompiled_url: "https://github.com/elixir-nx/stb_image/releases/download/v#{@version}/@{artefact_filename}",
+      make_precompiled_url:
+        "https://github.com/elixir-nx/stb_image/releases/download/v#{@version}/@{artefact_filename}",
       make_nif_filename: "stb_image_nif"
     ]
   end

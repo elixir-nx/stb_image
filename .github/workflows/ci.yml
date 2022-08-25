@@ -25,6 +25,7 @@ jobs:
       - name: Compile and Test
         run: |
           mix deps.get
+          mix compile
           mix test
 
   windows:
@@ -43,6 +44,7 @@ jobs:
       - name: Compile and Test
         run: |
           mix deps.get
+          mix compile
           mix test
 
   macos:
@@ -59,4 +61,5 @@ jobs:
       - name: Compile and Test
         run: |
           mix deps.get
+          mix compile
           mix test

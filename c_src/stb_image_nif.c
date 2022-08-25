@@ -291,7 +291,7 @@ static void write_chunk(void *context_, void *data, int size) {
 
 static void finalize_write(WriteContext *context, ErlNifEnv *env, ERL_NIF_TERM *binary) {
     if (!context->out_of_memory) {
-        void *buffer = enif_make_new_binary(env, context->size, binary);
+        char *buffer = (char *)enif_make_new_binary(env, context->size, binary);
 
         if (buffer == NULL) {
             context->out_of_memory = true;
@@ -400,7 +400,7 @@ static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
         return error(env, "invalid image");
     }
     if(!enif_get_int(env, argv[1], &input_h)) {
-        return error(env, "invalid input heigth");
+        return error(env, "invalid input height");
     }
     if(!enif_get_int(env, argv[2], &input_w)) {
         return error(env, "invalid input width");

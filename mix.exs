@@ -14,9 +14,12 @@ defmodule StbImage.MixProject do
       description: "A tiny image reader/writer library using stb_image as the backend",
       docs: docs(),
       package: package(),
-      compilers: [:fennec_precompile] ++ Mix.compilers(),
-      fennec_nif_filename: "stb_image_nif",
-      fennec_base_url: "https://github.com/elixir-nx/stb_image/releases/download/v#{@version}"
+      make_executable: make_executable(),
+      make_makefile: make_makefile(),
+      compilers: [:elixir_make] ++ Mix.compilers(),
+      make_precompiler: CCPrecompiler,
+      make_precompiled_url: "https://github.com/elixir-nx/stb_image/releases/download/v#{@version}/@{artefact_filename}",
+      make_nif_filename: "stb_image_nif"
     ]
   end
 
@@ -28,7 +31,7 @@ defmodule StbImage.MixProject do
 
   defp deps do
     [
-      {:fennec_precompile, "~> 0.1", runtime: false},
+      {:cc_precompiler, "~> 0.1.0", runtime: false, github: "cocoa-xu/cc_precompiler"},
       {:nx, "~> 0.1", optional: true},
       {:ex_doc, "~> 0.23", only: :docs, runtime: false}
     ]
@@ -49,5 +52,19 @@ defmodule StbImage.MixProject do
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @github_url}
     ]
+  end
+
+  defp make_executable() do
+    case :os.type() do
+      {:win32, _} -> "nmake"
+      _ -> "make"
+    end
+  end
+
+  defp make_makefile() do
+    case :os.type() do
+      {:win32, _} -> "Makefile.win"
+      _ -> "Makefile"
+    end
   end
 end

@@ -1,6 +1,6 @@
 %{
   "castore": {:hex, :castore, "0.1.17", "ba672681de4e51ed8ec1f74ed624d104c0db72742ea1a5e74edbc770c815182f", [:mix], [], "hexpm", "d9844227ed52d26e7519224525cb6868650c272d4a3d327ce3ca5570c12163f9"},
-  "cc_precompiler": {:git, "https://github.com/cocoa-xu/cc_precompiler.git", "83d7fe05fe308c39cac743e19bccf543f3a1646f", []},
+  "cc_precompiler": {:git, "https://github.com/cocoa-xu/cc_precompiler.git", "0b49d38df88778f3c916b2c26415dd09fc94ce82", []},
   "complex": {:hex, :complex, "0.4.1", "5d5a7bdbec13428c05824bac550b7d2b14ec395cd64663eca3cb0d3359aa22c5", [:mix], [], "hexpm", "6a813529dddba9bdfc17dffdd1aeda7b3d6891b76c8d4c1ae902ec74eb496a32"},
   "earmark_parser": {:hex, :earmark_parser, "1.4.26", "f4291134583f373c7d8755566122908eb9662df4c4b63caa66a0eabe06569b0a", [:mix], [], "hexpm", "48d460899f8a0c52c5470676611c01f64f3337bad0b26ddab43648428d94aabc"},
   "elixir_make": {:git, "https://github.com/cocoa-xu/elixir_make.git", "47aeac83d4bd3cb895e905e9b628987cfe8595eb", [branch: "cx-improve-precompiler"]},

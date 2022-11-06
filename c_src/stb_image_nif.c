@@ -59,14 +59,13 @@ static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     if (!enif_inspect_binary(env, argv[0], &path)) {
         return error(env, "invalid path");
     }
+    if(!enif_get_int(env, argv[1], &desired_channels)) {
+        return error(env, "invalid channels");
+    }
+
     c_path = enif_alloc(path.size + 1);
     memcpy(c_path, path.data, path.size);
     c_path[path.size] = '\0';
-
-    if(!enif_get_int(env, argv[1], &desired_channels)) {
-        ret = error(env, "invalid channels");
-        goto free_c_path;
-    }
 
     int x, y, n;
     unsigned char *data;
@@ -86,7 +85,7 @@ static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     }
 
     ret = pack_data(env, data, x, y, n, bytes_per_channel);
-    
+
     fclose(f);
     STBI_FREE((void *)data);
 

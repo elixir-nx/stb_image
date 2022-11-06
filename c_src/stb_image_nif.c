@@ -133,9 +133,9 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
         ErlNifBinary *frames_result = (ErlNifBinary *)enif_alloc(sizeof(ErlNifBinary) * z);
         bool ok = true;
         unsigned char *start = data;
-        size_t offset = x * y * sizeof(unsigned char);
+        size_t frame_size = x * y * sizeof(unsigned char) * 4;
         for (int i = 0; i < z; ++i) {
-            if (enif_alloc_binary(x * y * sizeof(unsigned char), &frames_result[i])) {
+            if (enif_alloc_binary(frame_size, &frames_result[i])) {
                 memcpy(frames_result[i].data, start, frames_result[i].size);
                 frames_term[i] = enif_make_binary(env, &frames_result[i]);
                 if (delays) {
@@ -144,7 +144,7 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
                     delays_term[i] = enif_make_int(env, -1);
                 }
 
-                start += offset;
+                start += frame_size;
             } else {
                 ok = false;
                 break;
@@ -168,7 +168,7 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
                                                 enif_make_tuple3(env,
                                                                  enif_make_int(env, y),
                                                                  enif_make_int(env, x),
-                                                                 enif_make_int(env, 3)),
+                                                                 enif_make_int(env, 4)),
                                                 delays_ret);
         STBI_FREE((void *)data);
         STBI_FREE((void *)delays);

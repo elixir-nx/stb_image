@@ -211,7 +211,7 @@ defmodule StbImage do
     Process.put(:stb_image_kino_render_tab_order, render_types)
   end
 
-  def set_kino_render_tab_order(types) do
+  def kino_render_tab_order(types) do
     raise RuntimeError, """
     Unknown order `#{inspect(types)}`.
     Supported orders are `#{inspect(@supported_kino_render_tab_order)}` and their combinations.

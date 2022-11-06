@@ -255,7 +255,7 @@ defmodule StbImage do
             else
               {"Numerical",
                Kino.Markdown.new("""
-               Numerical tab require application `:nx`, please add `{:nx, "~> 0.4"}` to the dependency list.
+               The `Numerical` tab requires application `:nx`, please add `{:nx, "~> 0.4"}` to the dependency list.
                """)}
             end
 

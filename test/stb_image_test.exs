@@ -153,7 +153,6 @@ defmodule StbImageTest do
 
   test "read/write file with UTF-8 characters in filename" do
     try do
-      File.mkdir("tmp")
       File.cp(Path.join(__DIR__, "test.png"), Path.join(__DIR__, "テスト.png"))
 
       img = StbImage.read_file!(Path.join(__DIR__, "テスト.png"))

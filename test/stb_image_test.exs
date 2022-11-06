@@ -151,6 +151,33 @@ defmodule StbImageTest do
     assert resized_img.type == img.type
   end
 
+  test "read/write file with UTF-8 characters in filename" do
+    try do
+      File.mkdir("tmp")
+      File.cp(Path.join(__DIR__, "test.png"), Path.join(__DIR__, "テスト.png"))
+
+      img = StbImage.read_file!(Path.join(__DIR__, "テスト.png"))
+      assert img.type == {:u, 8}
+      assert img.shape == {2, 3, 4}
+
+      assert img.data ==
+              <<241, 145, 126, 255, 136, 190, 78, 255, 68, 122, 183, 255, 244, 196, 187, 255, 190,
+                205, 145, 255, 144, 184, 200, 255>>
+
+      assert StbImage.new(img.data, img.shape) == img
+      assert StbImage.new(img.data, img.shape, type: :u8) == img
+      assert StbImage.new(img.data, img.shape, type: {:u, 8}) == img
+      assert to_from_nx(img) == img
+
+      save_at = Path.join(__DIR__, "セーブ.png")
+      :ok = StbImage.write_file!(img, save_at)
+      assert StbImage.read_file(save_at) == {:ok, img}
+    after
+      File.rm_rf(Path.join(__DIR__, "テスト.png"))
+      File.rm_rf(Path.join(__DIR__, "セーブ.png"))
+    end
+  end
+
   describe "errors" do
     test "read_file" do
       assert StbImage.read_file("unknown.jpg") == {:error, "could not open file"}

@@ -354,7 +354,7 @@ defmodule StbImage do
     end
   end
 
-  defp path_to_binary(path) when is_list(path), do: to_string(path)
+  defp path_to_binary(path) when is_list(path), do: List.to_string(path)
   defp path_to_binary(path) when is_binary(path), do: path
 
   defp type(:u8), do: {:u, 8}

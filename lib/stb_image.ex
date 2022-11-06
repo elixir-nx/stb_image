@@ -105,8 +105,6 @@ defmodule StbImage do
         "unsupported tensor shape: #{inspect(shape)} (expected height-width-channel)"
       )
 
-  @compile {:no_warn_undefined, Kino}
-
   if Code.ensure_loaded?(Kino.Render) do
     defimpl Kino.Render do
       require Logger

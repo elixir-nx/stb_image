@@ -111,7 +111,11 @@ defmodule StbImage do
     defimpl Kino.Render do
       require Logger
 
-      @default_kino_render_encoding Application.compile_env(:stb_image, :kino_render_encoding, :png)
+      @default_kino_render_encoding Application.compile_env(
+                                      :stb_image,
+                                      :kino_render_encoding,
+                                      :png
+                                    )
       @doc """
       Get preferred image encoding when rendering in Kino.
 
@@ -173,12 +177,12 @@ defmodule StbImage do
                                           [:image, :raw]
                                         end)
       @kino_render_tab_order Enum.uniq(
-                              Application.compile_env(
-                                :stb_image,
-                                :kino_render_tab_order,
-                                @supported_kino_render_tab_order
-                              )
-                            )
+                               Application.compile_env(
+                                 :stb_image,
+                                 :kino_render_tab_order,
+                                 @supported_kino_render_tab_order
+                               )
+                             )
       @doc """
       Get preferred order of Kino.Layout tabs for `StbImage` in Livebook.
 

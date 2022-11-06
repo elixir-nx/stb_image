@@ -30,6 +30,7 @@ defmodule StbImage.MixProject do
     [
       {:elixir_make, "~> 0.6"},
       {:nx, "~> 0.1", optional: true},
+      {:kino, "~> 0.7", optional: true},
       {:ex_doc, "~> 0.23", only: :docs, runtime: false}
     ]
   end

@@ -16,6 +16,7 @@ endif
 .DEFAULT_GLOBAL := build
 
 build: $(STB_IMAGE_NIF_SO)
+	@ echo > /dev/null
 
 $(STB_IMAGE_NIF_SO):
 	@ mkdir -p $(PRIV_DIR)

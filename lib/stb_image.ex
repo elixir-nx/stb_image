@@ -126,7 +126,7 @@ defmodule StbImage do
   def read_file(path, opts \\ []) when is_path(path) and is_list(opts) do
     channels = opts[:channels] || 0
 
-    case StbImage.Nif.read_file(path_to_charlist(path), channels) do
+    case StbImage.Nif.read_file(path_to_binary(path), channels) do
       {:ok, img, shape, bytes} ->
         {:ok, %StbImage{data: img, shape: shape, type: bytes_to_type(bytes)}}
 
@@ -249,7 +249,7 @@ defmodule StbImage do
     format = opts[:format] || format_from_path!(path)
     assert_write_type_and_format!(type, format)
 
-    case StbImage.Nif.write_file(path_to_charlist(path), format, data, height, width, channels) do
+    case StbImage.Nif.write_file(path_to_binary(path), format, data, height, width, channels) do
       :ok -> :ok
       {:error, reason} -> {:error, List.to_string(reason)}
     end
@@ -354,8 +354,8 @@ defmodule StbImage do
     end
   end
 
-  defp path_to_charlist(path) when is_list(path), do: path
-  defp path_to_charlist(path) when is_binary(path), do: String.to_charlist(path)
+  defp path_to_binary(path) when is_list(path), do: List.to_string(path)
+  defp path_to_binary(path) when is_binary(path), do: path
 
   defp type(:u8), do: {:u, 8}
   defp type(:f32), do: {:f, 32}

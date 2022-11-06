@@ -6,6 +6,7 @@
 #define STBI_MALLOC enif_alloc
 #define STBI_REALLOC enif_realloc
 #define STBI_FREE enif_free
+#define STBI_WINDOWS_UTF8
 #include <stb_image.h>
 #include <stb_image_write.h>
 #include <stb_image_resize.h>

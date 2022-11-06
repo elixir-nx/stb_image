@@ -163,11 +163,11 @@ defmodule StbImage do
     """
   end
 
-  @supported_kino_render_tab_order if Code.ensure_loaded?(Nx) do
-    [:image, :raw, :numerical]
-  else
-    [:image, :raw]
-  end
+  @supported_kino_render_tab_order (if Code.ensure_loaded?(Nx) do
+                                      [:image, :raw, :numerical]
+                                    else
+                                      [:image, :raw]
+                                    end)
   @kino_render_tab_order Enum.uniq(
                            Application.compile_env(
                              :stb_image,

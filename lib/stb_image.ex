@@ -109,139 +109,33 @@ defmodule StbImage do
     defimpl Kino.Render do
       require Logger
 
-      @default_kino_render_encoding Application.compile_env(
-                                      :stb_image,
-                                      :kino_render_encoding,
-                                      :png
-                                    )
-      @doc """
-      Get preferred image encoding when rendering in Kino.
-
-      Default value is `Application.compile_env(:stb_image, :kino_render_encoding, :png)`.
-      """
-      @spec kino_render_encoding(atom()) :: term()
-      def kino_render_encoding(encoding \\ nil)
-
-      def kino_render_encoding(nil) do
-        Process.get(:stb_image_kino_render_encoding, @default_kino_render_encoding)
-      end
-
-      def kino_render_encoding(encoding) when encoding in [:png, :jpg, :jpeg] do
-        encoding =
-          if encoding == :jpeg do
-            :jpg
-          else
-            encoding
-          end
-
-        Process.put(:stb_image_kino_render_encoding, encoding)
-      end
-
-      def kino_render_encoding(unsupported_encoding) do
-        raise RuntimeError, "Encoding #{inspect(unsupported_encoding)} is not supported."
-      end
-
-      @default_kino_render_max_size Application.compile_env(
-                                      :stb_image,
-                                      :kino_render_max_size,
-                                      {8192, 8192}
-                                    )
-      @doc """
-      Get the maximum allowed image size to render in Kino.
-
-      Default value is `Application.compile_env(:stb_image, :kino_render_max_size, {8192, 8192})`.
-      """
-      @spec kino_render_max_size({integer(), integer()} | nil) :: term()
-      def kino_render_max_size(max_size \\ nil)
-
-      def kino_render_max_size(nil) do
-        Process.get(:stb_image_kino_render_max_size, @default_kino_render_max_size)
-      end
-
-      def kino_render_max_size({height, width}) when is_integer(height) and is_integer(width) do
-        Process.put(:stb_image_kino_render_max_size, {height, width})
-      end
-
-      def kino_render_max_size(unsupported_max_size) do
-        raise RuntimeError, """
-        Invalid parameter for max size, expecting a 2-tuple, {height, width},
-        where height and width are both integers. However, got `#{inspect(unsupported_max_size)}`
-        """
-      end
-
-      @supported_kino_render_tab_order (if Code.ensure_loaded?(Nx) do
-                                          [:image, :raw, :numerical]
-                                        else
-                                          [:image, :raw]
-                                        end)
-      @kino_render_tab_order Enum.uniq(
-                               Application.compile_env(
-                                 :stb_image,
-                                 :kino_render_tab_order,
-                                 @supported_kino_render_tab_order
-                               )
-                             )
-      @doc """
-      Get preferred order of Kino.Layout tabs for `StbImage` in Livebook.
-
-      Default value is `Enum.uniq(Application.compile_env(:stb_image, :kino_render_tab_order, @supported_kino_render_tab_order))`.
-
-      where `@supported_kino_render_tab_order` is `[:image, :raw, :numerical]` if `:nx` is available,
-      otherwise `[:image, :raw]`
-      """
-      @spec kino_render_tab_order([atom()] | nil) :: term()
-      def kino_render_tab_order(order \\ nil)
-
-      def kino_render_tab_order(nil) do
-        Process.get(:stb_image_kino_render_tab_order, @kino_render_tab_order)
-      end
-
-      def kino_render_tab_order(order) when is_list(order) do
-        render_types =
-          Enum.map(order, fn t ->
-            supported? = Enum.member?(@supported_kino_render_tab_order, t)
-
-            if !supported? do
-              Logger.warning("""
-              Unknown type `#{inspect(t)}` found in `config :stb_image, kino_render_tab_order`.
-              Supported types are `#{inspect(@supported_kino_render_tab_order)}` and their combinations.
-              """)
-
-              nil
-            else
-              t
-            end
-          end)
-          |> Enum.reject(fn a -> a == nil end)
-
-        Process.put(:stb_image_kino_render_tab_order, render_types)
-      end
-
-      def kino_render_tab_order(types) do
-        raise RuntimeError, """
-        Unknown order `#{inspect(types)}`.
-        Supported orders are `#{inspect(@supported_kino_render_tab_order)}` and their combinations.
-        """
-      end
-
       defp within_maximum_size(image) do
-        {max_height, max_width} = kino_render_max_size()
+        max_size = Application.fetch_env!(:stb_image, :kino_render_max_size)
 
-        case image.shape do
-          {h, w} ->
-            h <= max_height and w <= max_width
+        case max_size do
+          {max_height, max_width} when is_integer(max_height) and is_integer(max_width) ->
+            case image.shape do
+              {h, w} ->
+                h <= max_height and w <= max_width
 
-          {h, w, _c} ->
-            h <= max_height and w <= max_width
+              {h, w, _c} ->
+                h <= max_height and w <= max_width
+
+              _ ->
+                false
+            end
 
           _ ->
-            false
+            raise """
+            Invalid configuration for max size, expecting a 2-tuple, {height, width},
+            where height and width are both integers. However, got `#{inspect(max_size)}`
+            """
         end
       end
 
       @spec to_livebook(StbImage.t()) :: Kino.Output.t()
       def to_livebook(image) when is_struct(image, StbImage) do
-        render_types = kino_render_tab_order()
+        render_types = Application.fetch_env!(:stb_image, :kino_render_tab_order)
 
         Enum.map(render_types, fn
           :raw ->
@@ -258,8 +152,14 @@ defmodule StbImage do
             end
 
           :image ->
+            render_encoding = Application.fetch_env!(:stb_image, :kino_render_encoding)
+
+            if render_encoding not in [:png, :jpg, :jpeg] do
+              raise "Invalid value for :kino_render_encoding. Expected one of :png, :jpg, :jpeg, got #{inspect(render_encoding)}"
+            end
+
             {stb_format, kino_format} =
-              case kino_render_encoding() do
+              case render_encoding do
                 :jpg ->
                   {:jpg, :jpeg}
 
@@ -268,9 +168,6 @@ defmodule StbImage do
 
                 :png ->
                   {:png, :png}
-
-                unknown ->
-                  raise RuntimeError, "Cannot render image with encoding `#{inspect(unknown)}`"
               end
 
             with true <- within_maximum_size(image),
@@ -281,6 +178,12 @@ defmodule StbImage do
               _ ->
                 nil
             end
+
+          type ->
+            raise """
+            Unknown type `#{inspect(type)}`. The set of supported types is `[:image, :raw, :numerical]`.
+            You can specify any valid subset of it. However, note that `:numerical` one depends on `:nx`.
+            """
         end)
         |> Enum.reject(fn a -> a == nil end)
         |> to_livebook_tabs(render_types, image)

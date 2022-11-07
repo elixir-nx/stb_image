@@ -22,6 +22,11 @@ defmodule StbImage.MixProject do
 
   def application do
     [
+      env: [
+        kino_render_encoding: :png,
+        kino_render_max_size: {8192, 8192},
+        kino_render_tab_order: [:image, :raw]
+      ],
       extra_applications: [:logger]
     ]
   end

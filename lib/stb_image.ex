@@ -20,8 +20,6 @@ defmodule StbImage do
   There are also specific functions for working with GIFs.
   """
 
-  require Logger
-
   @doc """
   The `StbImage` struct.
 
@@ -107,8 +105,6 @@ defmodule StbImage do
 
   if Code.ensure_loaded?(Kino.Render) do
     defimpl Kino.Render do
-      require Logger
-
       defp within_maximum_size(image) do
         max_size = Application.fetch_env!(:stb_image, :kino_render_max_size)
 

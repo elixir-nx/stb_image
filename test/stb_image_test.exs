@@ -95,10 +95,23 @@ defmodule StbImageTest do
     assert delays == [200, 200]
 
     assert Enum.all?(frames, &(&1.type == {:u, 8}))
-    assert Enum.all?(frames, &(&1.shape == {2, 3, 3}))
+    assert Enum.all?(frames, &(&1.shape == {2, 3, 4}))
 
-    assert Enum.map(frames, & &1.data) ==
-             [<<180, 128, 70, 255, 171, 119>>, <<61, 255, 65, 143, 117, 255>>]
+    assert Enum.at(frames, 0).data == <<180, 128, 70, 255, 171, 119, 61, 255, 65, 143, 117, 255, 222, 170, 112, 255, 205, 153, 95, 255, 88, 166, 140, 255>>
+    assert Enum.at(frames, 1).data == <<241, 145, 126, 255, 136, 190, 78, 255, 68, 122, 183, 255, 244, 196, 187, 255, 190, 205, 145, 255, 144, 184, 200, 255>>
+  end
+
+  test "decode gif dispose mode previous" do
+    {:ok, frames, delays} = StbImage.read_gif_file(Path.join(__DIR__, "test_dispose_mode_previous.gif"))
+    assert delays == [70, 70, 70, 70]
+
+    assert Enum.all?(frames, &(&1.type == {:u, 8}))
+    assert Enum.all?(frames, &(&1.shape == {2, 2, 4}))
+
+    assert Enum.at(frames, 0).data == <<255, 255, 255, 255, 255, 255, 255, 255, 128, 128, 128, 255, 255, 255, 255, 255>>
+    assert Enum.at(frames, 1).data == <<128, 128, 128, 255, 255, 255, 255, 255, 255, 255, 255, 255, 240, 240, 240, 255>>
+    assert Enum.at(frames, 2).data == <<0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255>>
+    assert Enum.at(frames, 3).data == <<255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 200, 200, 200, 255>>
   end
 
   for ext <- ~w(bmp png tga jpg hdr)a do
@@ -149,6 +162,32 @@ defmodule StbImageTest do
     resized_img = StbImage.resize(img, 192, 384)
     assert resized_img.shape == {192, 384, 3}
     assert resized_img.type == img.type
+  end
+
+  test "read/write file with UTF-8 characters in filename" do
+    try do
+      File.cp(Path.join(__DIR__, "test.png"), Path.join(__DIR__, "テスト.png"))
+
+      img = StbImage.read_file!(Path.join(__DIR__, "テスト.png"))
+      assert img.type == {:u, 8}
+      assert img.shape == {2, 3, 4}
+
+      assert img.data ==
+              <<241, 145, 126, 255, 136, 190, 78, 255, 68, 122, 183, 255, 244, 196, 187, 255, 190,
+                205, 145, 255, 144, 184, 200, 255>>
+
+      assert StbImage.new(img.data, img.shape) == img
+      assert StbImage.new(img.data, img.shape, type: :u8) == img
+      assert StbImage.new(img.data, img.shape, type: {:u, 8}) == img
+      assert to_from_nx(img) == img
+
+      save_at = Path.join(__DIR__, "セーブ.png")
+      :ok = StbImage.write_file!(img, save_at)
+      assert StbImage.read_file(save_at) == {:ok, img}
+    after
+      File.rm_rf(Path.join(__DIR__, "テスト.png"))
+      File.rm_rf(Path.join(__DIR__, "セーブ.png"))
+    end
   end
 
   describe "errors" do

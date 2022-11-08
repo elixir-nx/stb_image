@@ -103,6 +103,96 @@ defmodule StbImage do
         "unsupported tensor shape: #{inspect(shape)} (expected height-width-channel)"
       )
 
+  if Code.ensure_loaded?(Kino.Render) do
+    defimpl Kino.Render do
+      defp within_maximum_size(image) do
+        max_size = Application.fetch_env!(:stb_image, :kino_render_max_size)
+
+        case max_size do
+          {max_height, max_width} when is_integer(max_height) and is_integer(max_width) ->
+            {h, w, _c} = image.shape
+            h <= max_height and w <= max_width
+
+          _ ->
+            raise """
+            invalid :kino_render_max_size configuration. Expected a 2-tuple, {height, width},
+            where height and width are both integers. Got: #{inspect(max_size)}
+            """
+        end
+      end
+
+      @spec to_livebook(StbImage.t()) :: Kino.Output.t()
+      def to_livebook(image) when is_struct(image, StbImage) do
+        render_types = Application.fetch_env!(:stb_image, :kino_render_tab_order)
+
+        Enum.map(render_types, fn
+          :raw ->
+            {"Raw", Kino.Inspect.new(image)}
+
+          :numerical ->
+            if Code.ensure_loaded?(Nx) do
+              {"Numerical", Kino.Inspect.new(StbImage.to_nx(image))}
+            else
+              {"Numerical",
+               Kino.Markdown.new("""
+               The `Numerical` tab requires application `:nx`, please add `{:nx, "~> 0.4"}` to the dependency list.
+               """)}
+            end
+
+          :image ->
+            render_encoding = Application.fetch_env!(:stb_image, :kino_render_encoding)
+
+            {stb_format, kino_format} =
+              case render_encoding do
+                :jpg ->
+                  {:jpg, :jpeg}
+
+                :jpeg ->
+                  {:jpg, :jpeg}
+
+                :png ->
+                  {:png, :png}
+                
+                _ ->
+                  raise "invalid :kino_render_encoding configuration. Expected one of :png, :jpg, or :jpeg. Got: #{inspect(render_encoding)}"
+              end
+
+            with true <- within_maximum_size(image),
+                 encoded <- StbImage.to_binary(image, stb_format),
+                 true <- is_binary(encoded) do
+              {"Image", Kino.Image.new(encoded, kino_format)}
+            else
+              _ ->
+                nil
+            end
+
+          type ->
+            raise """
+            invalid :kino_render_tab_order configuration. The set of supported types are [:image, :raw, :numerical].
+            Got: #{inspect(type)}
+            """
+        end)
+        |> Enum.reject(&is_nil/1)
+        |> to_livebook_tabs(render_types, image)
+      end
+
+      defp to_livebook_tabs([], [:image], image) do
+        Kino.Layout.tabs([{"Raw", Kino.Inspect.new(image)}])
+        |> Kino.Render.to_livebook()
+      end
+
+      defp to_livebook_tabs(_tabs, [], image) do
+        Kino.Inspect.new(image)
+        |> Kino.Render.to_livebook()
+      end
+
+      defp to_livebook_tabs(tabs, _types, _mat) do
+        Kino.Layout.tabs(tabs)
+        |> Kino.Render.to_livebook()
+      end
+    end
+  end
+
   @doc """
   Reads image from file at `path`.
 
@@ -126,7 +216,7 @@ defmodule StbImage do
   def read_file(path, opts \\ []) when is_path(path) and is_list(opts) do
     channels = opts[:channels] || 0
 
-    case StbImage.Nif.read_file(path_to_charlist(path), channels) do
+    case StbImage.Nif.read_file(path_to_binary(path), channels) do
       {:ok, img, shape, bytes} ->
         {:ok, %StbImage{data: img, shape: shape, type: bytes_to_type(bytes)}}
 
@@ -249,7 +339,7 @@ defmodule StbImage do
     format = opts[:format] || format_from_path!(path)
     assert_write_type_and_format!(type, format)
 
-    case StbImage.Nif.write_file(path_to_charlist(path), format, data, height, width, channels) do
+    case StbImage.Nif.write_file(path_to_binary(path), format, data, height, width, channels) do
       :ok -> :ok
       {:error, reason} -> {:error, List.to_string(reason)}
     end
@@ -354,8 +444,8 @@ defmodule StbImage do
     end
   end
 
-  defp path_to_charlist(path) when is_list(path), do: path
-  defp path_to_charlist(path) when is_binary(path), do: String.to_charlist(path)
+  defp path_to_binary(path) when is_list(path), do: List.to_string(path)
+  defp path_to_binary(path) when is_binary(path), do: path
 
   defp type(:u8), do: {:u, 8}
   defp type(:f32), do: {:f, 32}

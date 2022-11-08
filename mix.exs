@@ -25,6 +25,11 @@ defmodule StbImage.MixProject do
 
   def application do
     [
+      env: [
+        kino_render_encoding: :png,
+        kino_render_max_size: {8192, 8192},
+        kino_render_tab_order: [:image, :raw]
+      ],
       extra_applications: [:logger]
     ]
   end
@@ -34,6 +39,7 @@ defmodule StbImage.MixProject do
       {:cc_precompiler, "~> 0.1.0", runtime: false, github: "cocoa-xu/cc_precompiler"},
       {:nx, "~> 0.4", optional: true},
       {:ex_doc, "~> 0.29", only: :docs, runtime: false}
+      {:kino, "~> 0.7", optional: true}
     ]
   end
 

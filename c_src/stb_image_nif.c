@@ -6,13 +6,14 @@
 #define STBI_MALLOC enif_alloc
 #define STBI_REALLOC enif_realloc
 #define STBI_FREE enif_free
+#define STBI_WINDOWS_UTF8
+#define STBIW_WINDOWS_UTF8
 #include <stb_image.h>
 #include <stb_image_write.h>
 #include <stb_image_resize.h>
 #include <stdbool.h>
 #include <stdio.h>
 
-#define MAX_NAME_LENGTH 2048
 #define MAX_EXTNAME_LENGTH 4
 
 #include "nif_utils.h"
@@ -51,21 +52,31 @@ static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         return error(env, "expecting 2 arguments: path and desired_channels");
     }
 
-    char path[MAX_NAME_LENGTH];
+    char * c_path = NULL;
+    ErlNifBinary path;
     int desired_channels, bytes_per_channel;
+    
+    ERL_NIF_TERM ret;
 
-    if (!enif_get_string(env, argv[0], path, sizeof(path), ERL_NIF_LATIN1)) {
+    if (!enif_inspect_binary(env, argv[0], &path)) {
         return error(env, "invalid path");
     }
     if(!enif_get_int(env, argv[1], &desired_channels)) {
         return error(env, "invalid channels");
     }
 
+    c_path = enif_alloc(path.size + 1);
+    memcpy(c_path, path.data, path.size);
+    c_path[path.size] = '\0';
+
     int x, y, n;
     unsigned char *data;
 
-    FILE *f = stbi__fopen(path, "rb");
-    if (!f) { return error(env, "could not open file"); }
+    FILE *f = stbi__fopen(c_path, "rb");
+    if (!f) { 
+        ret = error(env, "could not open file");
+        goto free_c_path;
+    }
 
     if (stbi_is_hdr_from_file(f)) {
         data = (unsigned char *)stbi_loadf_from_file(f, &x, &y, &n, desired_channels);
@@ -75,9 +86,14 @@ static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         bytes_per_channel = 1;
     }
 
-    ERL_NIF_TERM ret = pack_data(env, data, x, y, n, bytes_per_channel);
-    STBI_FREE((void *)data);
+    ret = pack_data(env, data, x, y, n, bytes_per_channel);
+
     fclose(f);
+    STBI_FREE((void *)data);
+
+free_c_path:
+    enif_free((void *)c_path);
+
     return ret;
 }
 
@@ -133,9 +149,9 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
         ErlNifBinary *frames_result = (ErlNifBinary *)enif_alloc(sizeof(ErlNifBinary) * z);
         bool ok = true;
         unsigned char *start = data;
-        size_t offset = x * y * sizeof(unsigned char);
+        size_t frame_size = x * y * sizeof(unsigned char) * 4;
         for (int i = 0; i < z; ++i) {
-            if (enif_alloc_binary(x * y * sizeof(unsigned char), &frames_result[i])) {
+            if (enif_alloc_binary(frame_size, &frames_result[i])) {
                 memcpy(frames_result[i].data, start, frames_result[i].size);
                 frames_term[i] = enif_make_binary(env, &frames_result[i]);
                 if (delays) {
@@ -144,7 +160,7 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
                     delays_term[i] = enif_make_int(env, -1);
                 }
 
-                start += offset;
+                start += frame_size;
             } else {
                 ok = false;
                 break;
@@ -168,7 +184,7 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
                                                 enif_make_tuple3(env,
                                                                  enif_make_int(env, y),
                                                                  enif_make_int(env, x),
-                                                                 enif_make_int(env, 3)),
+                                                                 enif_make_int(env, 4)),
                                                 delays_ret);
         STBI_FREE((void *)data);
         STBI_FREE((void *)delays);
@@ -186,11 +202,13 @@ static ERL_NIF_TERM write_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv
         return error(env, "expecting 6 arguments: path, format, data, height, width, and number of channels");
     }
 
-    char path[MAX_NAME_LENGTH], format[MAX_EXTNAME_LENGTH];
+    char * c_path = NULL;
+    char format[MAX_EXTNAME_LENGTH];
+    ErlNifBinary path;
     ErlNifBinary result;
     int w, h, comp;
 
-    if (!enif_get_string(env, argv[0], path, sizeof(path), ERL_NIF_LATIN1)) {
+    if (!enif_inspect_binary(env, argv[0], &path)) {
         return error(env, "invalid path");
     }
     if (!enif_get_atom(env, argv[1], format, sizeof(format), ERL_NIF_LATIN1)) {
@@ -209,38 +227,44 @@ static ERL_NIF_TERM write_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv
         return error(env, "invalid number of channels");
     }
 
+    c_path = enif_alloc(path.size + 1);
+    memcpy(c_path, path.data, path.size);
+    c_path[path.size] = '\0';
+
+    ERL_NIF_TERM ret = enif_make_atom(env, "ok");
     if (strcmp(format, "png") == 0) {
         int stride_in_bytes = 0;
-        int status = stbi_write_png(path, w, h, comp, result.data, stride_in_bytes);
+        int status = stbi_write_png(c_path, w, h, comp, result.data, stride_in_bytes);
         if (!status) {
-            return error(env, "failed to write png");
+            ret = error(env, "failed to write png");
         }
     } else if (strcmp(format, "bmp") == 0) {
-        int status = stbi_write_bmp(path, w, h, comp, result.data);
+        int status = stbi_write_bmp(c_path, w, h, comp, result.data);
         if (!status) {
-            return error(env, "failed to write bmp");
+            ret = error(env, "failed to write bmp");
         }
     } else if (strcmp(format, "tga") == 0) {
-        int status = stbi_write_tga(path, w, h, comp, result.data);
+        int status = stbi_write_tga(c_path, w, h, comp, result.data);
         if (!status) {
-            return error(env, "failed to write tga");
+            ret = error(env, "failed to write tga");
         }
     } else if (strcmp(format, "jpg") == 0) {
         int quality = 100;
-        int status = stbi_write_jpg(path, w, h, comp, result.data, quality);
+        int status = stbi_write_jpg(c_path, w, h, comp, result.data, quality);
         if (!status) {
-            return error(env, "failed to write jpg");
+            ret = error(env, "failed to write jpg");
         }
     } else if (strcmp(format, "hdr") == 0) {
-        int status = stbi_write_hdr(path, w, h, comp, (float*)result.data);
+        int status = stbi_write_hdr(c_path, w, h, comp, (float*)result.data);
         if (!status) {
-            return error(env, "failed to write hdr");
+            ret = error(env, "failed to write hdr");
         }
     } else {
-        return error(env, "wrong format");
+        ret = error(env, "wrong format");
     }
 
-    return enif_make_atom(env, "ok");
+    enif_free((void *)c_path);
+    return ret;
 }
 
 typedef struct WriteChunk {

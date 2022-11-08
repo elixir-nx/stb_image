@@ -36,10 +36,14 @@ defmodule StbImage.MixProject do
 
   defp deps do
     [
+      # compilation
+      # todo: switch to hex package once elixir_make that supports precompiler is available
       {:cc_precompiler, "~> 0.1.0", runtime: false, github: "cocoa-xu/cc_precompiler"},
+      # optional
       {:nx, "~> 0.4", optional: true},
+      {:kino, "~> 0.7", optional: true},
+      # docs
       {:ex_doc, "~> 0.29", only: :docs, runtime: false}
-      {:kino, "~> 0.7", optional: true}
     ]
   end
 

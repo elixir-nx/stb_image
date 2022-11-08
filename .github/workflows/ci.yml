@@ -9,23 +9,25 @@ on:
     paths-ignore:
       - '**/README.md'
       - 'LICENSE*'
-  workflow_dispatch:
 
 jobs:
   linux:
     runs-on: ubuntu-20.04
     env:
       MIX_ENV: test
+
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
         with:
           otp-version: 25.1
           elixir-version: 1.14
+
       - name: Compile and Test
         run: |
           mix deps.get
           mix elixir_make.precompile
+          rm -rf _build
           mix test
 
   windows:
@@ -34,32 +36,41 @@ jobs:
       MIX_ENV: test
     steps:
       - uses: actions/checkout@v3
+
       - uses: erlef/setup-beam@v1
         with:
           otp-version: 25.1
           elixir-version: 1.14
+
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
+
       - name: Compile and Test
+        shell: bash
         run: |
           mix deps.get
           mix elixir_make.precompile
+          rm -rf _build
           mix test
 
   macos:
     runs-on: macos-11
     env:
       MIX_ENV: test
+
     steps:
       - uses: actions/checkout@v3
+
       - name: macOS setup
         run: |
           brew install erlang elixir
           mix local.hex --force
           mix local.rebar --force
+
       - name: Compile and Test
         run: |
           mix deps.get
           mix elixir_make.precompile
+          rm -rf _build
           mix test

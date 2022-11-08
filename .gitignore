@@ -26,4 +26,4 @@ img_decode-*.tar
 /tmp/
 
 # Checksums for precompile binaries.
-checksum-*.exs
+/checksum.exs

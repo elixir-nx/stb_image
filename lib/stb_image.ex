@@ -123,8 +123,8 @@ defmodule StbImage do
 
           _ ->
             raise """
-            Invalid configuration for max size, expecting a 2-tuple, {height, width},
-            where height and width are both integers. However, got `#{inspect(max_size)}`
+            invalid :kino_render_max_size configuration. Expected a 2-tuple, {height, width},
+            where height and width are both integers. Got: #{inspect(max_size)}
             """
         end
       end
@@ -151,7 +151,7 @@ defmodule StbImage do
             render_encoding = Application.fetch_env!(:stb_image, :kino_render_encoding)
 
             if render_encoding not in [:png, :jpg, :jpeg] do
-              raise "Invalid value for :kino_render_encoding. Expected one of :png, :jpg, :jpeg, got #{inspect(render_encoding)}"
+              raise "invalid :kino_render_encoding value. Expected one of :png, :jpg, or :jpeg. Got: #{inspect(render_encoding)}"
             end
 
             {stb_format, kino_format} =
@@ -177,8 +177,8 @@ defmodule StbImage do
 
           type ->
             raise """
-            Unknown type `#{inspect(type)}`. The set of supported types is `[:image, :raw, :numerical]`.
-            You can specify any valid subset of it. However, note that `:numerical` one depends on `:nx`.
+            invalid :kino_render_tab_order configuration. The set of supported types are [:image, :raw, :numerical].
+            Got: #{inspect(type)}
             """
         end)
         |> Enum.reject(fn a -> a == nil end)

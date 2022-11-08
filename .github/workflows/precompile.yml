@@ -16,8 +16,8 @@ jobs:
 
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 25.0.4
-          elixir-version: 1.13.4
+          otp-version: 25.1
+          elixir-version: 1.14
 
       - name: Install system dependecies
         run: |
@@ -81,8 +81,8 @@ jobs:
 
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 25.0.4
-          elixir-version: 1.13.4
+          otp-version: 25.1
+          elixir-version: 1.14
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:

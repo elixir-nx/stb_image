@@ -58,7 +58,7 @@ defmodule StbImage.MixProject do
   defp package() do
     [
       name: "stb_image",
-      files: ~w(3rd_party/stb c_src lib mix.exs README* LICENSE* Makefile checksum-*.exs),
+      files: ~w(3rd_party/stb c_src lib mix.exs README* LICENSE* Makefile checksum.exs),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @github_url}
     ]

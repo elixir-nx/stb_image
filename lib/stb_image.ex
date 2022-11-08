@@ -110,16 +110,8 @@ defmodule StbImage do
 
         case max_size do
           {max_height, max_width} when is_integer(max_height) and is_integer(max_width) ->
-            case image.shape do
-              {h, w} ->
-                h <= max_height and w <= max_width
-
-              {h, w, _c} ->
-                h <= max_height and w <= max_width
-
-              _ ->
-                false
-            end
+            {h, w, _c} = image.shape
+            h <= max_height and w <= max_width
 
           _ ->
             raise """

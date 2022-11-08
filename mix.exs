@@ -22,6 +22,11 @@ defmodule StbImage.MixProject do
 
   def application do
     [
+      env: [
+        kino_render_encoding: :png,
+        kino_render_max_size: {8192, 8192},
+        kino_render_tab_order: [:image, :raw]
+      ],
       extra_applications: [:logger]
     ]
   end
@@ -30,6 +35,7 @@ defmodule StbImage.MixProject do
     [
       {:elixir_make, "~> 0.6"},
       {:nx, "~> 0.1", optional: true},
+      {:kino, "~> 0.7", optional: true},
       {:ex_doc, "~> 0.23", only: :docs, runtime: false}
     ]
   end

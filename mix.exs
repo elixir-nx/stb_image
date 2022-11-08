@@ -1,7 +1,7 @@
 defmodule StbImage.MixProject do
   use Mix.Project
 
-  @version "0.5.3"
+  @version "0.5.2"
   @github_url "https://github.com/elixir-nx/stb_image"
 
   def project do
@@ -18,8 +18,7 @@ defmodule StbImage.MixProject do
       make_makefile: make_makefile(),
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_precompiler: CCPrecompiler,
-      make_precompiled_url:
-        "https://github.com/elixir-nx/stb_image/releases/download/v#{@version}/@{artefact_filename}",
+      make_precompiled_url: "#{@github_url}/releases/download/v#{@version}/@{artefact_filename}",
       make_nif_filename: "stb_image_nif"
     ]
   end
@@ -33,8 +32,8 @@ defmodule StbImage.MixProject do
   defp deps do
     [
       {:cc_precompiler, "~> 0.1.0", runtime: false, github: "cocoa-xu/cc_precompiler"},
-      {:nx, "~> 0.1", optional: true},
-      {:ex_doc, "~> 0.23", only: :docs, runtime: false}
+      {:nx, "~> 0.4", optional: true},
+      {:ex_doc, "~> 0.29", only: :docs, runtime: false}
     ]
   end
 

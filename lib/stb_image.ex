@@ -150,10 +150,6 @@ defmodule StbImage do
           :image ->
             render_encoding = Application.fetch_env!(:stb_image, :kino_render_encoding)
 
-            if render_encoding not in [:png, :jpg, :jpeg] do
-              raise "invalid :kino_render_encoding value. Expected one of :png, :jpg, or :jpeg. Got: #{inspect(render_encoding)}"
-            end
-
             {stb_format, kino_format} =
               case render_encoding do
                 :jpg ->
@@ -164,6 +160,9 @@ defmodule StbImage do
 
                 :png ->
                   {:png, :png}
+                
+                _ ->
+                  raise "invalid :kino_render_encoding configuration. Expected one of :png, :jpg, or :jpeg. Got: #{inspect(render_encoding)}"
               end
 
             with true <- within_maximum_size(image),
@@ -181,7 +180,7 @@ defmodule StbImage do
             Got: #{inspect(type)}
             """
         end)
-        |> Enum.reject(fn a -> a == nil end)
+        |> Enum.reject(&is_nil/1)
         |> to_livebook_tabs(render_types, image)
       end
 

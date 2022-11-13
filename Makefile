@@ -9,7 +9,13 @@ CPPFLAGS += -shared -std=c11 -O3 -Wall -Wextra -Wno-unused-parameter -Wno-missin
 CPPFLAGS += -I$(ERTS_INCLUDE_DIR) -I$(STB_INCLUDE_DIR)
 
 UNAME_S := $(shell uname -s)
+ifndef TARGET_ABI
 ifeq ($(UNAME_S),Darwin)
+	TARGET_ABI = darwin
+endif
+endif
+
+ifeq ($(TARGET_ABI),darwin)
 	CPPFLAGS += -undefined dynamic_lookup -flat_namespace -undefined suppress
 endif
 

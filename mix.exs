@@ -17,7 +17,7 @@ defmodule StbImage.MixProject do
       make_executable: make_executable(),
       make_makefile: make_makefile(),
       compilers: [:elixir_make] ++ Mix.compilers(),
-      make_precompiler: CCPrecompiler,
+      make_precompiler: {:nif, CCPrecompiler},
       make_precompiled_url: "#{@github_url}/releases/download/v#{@version}/@{artefact_filename}",
       make_nif_filename: "stb_image_nif"
     ]

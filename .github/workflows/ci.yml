@@ -27,7 +27,6 @@ jobs:
         run: |
           mix deps.get
           mix elixir_make.precompile
-          rm -rf _build
           mix test
 
   windows:
@@ -51,7 +50,6 @@ jobs:
         run: |
           mix deps.get
           mix elixir_make.precompile
-          rm -rf _build
           mix test
 
   macos:
@@ -72,5 +70,4 @@ jobs:
         run: |
           mix deps.get
           mix elixir_make.precompile
-          rm -rf _build
           mix test

@@ -18,6 +18,13 @@ defmodule StbImage do
     * HDR (radiance rgbE format) (type is f32)
 
   There are also specific functions for working with GIFs.
+
+  ## Nx integration
+
+  StbImage's can be passed to `Nx`'s numerical definitions
+  and it will be automatically converted to tensors. You can
+  also explicitly convert to and from tensors using `to_nx/2`
+  and `from_nx/1`.
   """
 
   @doc """
@@ -64,44 +71,50 @@ defmodule StbImage do
     end
   end
 
-  @compile {:no_warn_undefined, Nx}
+  if Code.ensure_loaded?(Nx) do
+    @doc """
+    Converts a `StbImage` to a Nx tensor.
 
-  @doc """
-  Converts a `StbImage` to a Nx tensor.
+    It accepts the same options as `Nx.from_binary/3`.
+    """
+    def to_nx(%StbImage{data: data, type: type, shape: shape}, opts \\ []) do
+      data
+      |> Nx.from_binary(type, opts)
+      |> Nx.reshape(shape, names: [:height, :width, :channels])
+    end
 
-  It accepts the same options as `Nx.from_binary/3`.
-  """
-  def to_nx(%StbImage{data: data, type: type, shape: shape}, opts \\ []) do
-    data
-    |> Nx.from_binary(type, opts)
-    |> Nx.reshape(shape, names: [:height, :width, :channels])
+    @doc """
+    Creates a `StbImage` from a Nx tensor.
+
+    The tensor is expected to have the shape `{h, w, c}`
+    and one of the supported types (u8/f32).
+    """
+    def from_nx(tensor) when is_struct(tensor, Nx.Tensor) do
+      new(Nx.to_binary(tensor), tensor_shape(Nx.shape(tensor)), type: tensor_type(Nx.type(tensor)))
+    end
+
+    defp tensor_type({:u, 8}), do: {:u, 8}
+    defp tensor_type({:f, 32}), do: {:f, 32}
+
+    defp tensor_type(type),
+      do: raise(ArgumentError, "unsupported tensor type: #{inspect(type)} (expected u8/f32)")
+
+    defp tensor_shape({_, _, c} = shape) when c in 1..4,
+      do: shape
+
+    defp tensor_shape(shape),
+      do:
+        raise(
+          ArgumentError,
+          "unsupported tensor shape: #{inspect(shape)} (expected height-width-channel)"
+        )
+
+    defimpl Nx.LazyContainer do
+      def traverse(%StbImage{type: type, shape: shape} = stb_image, acc, fun) do
+        fun.(Nx.template(shape, type), fn -> StbImage.to_nx(stb_image) end, acc)
+      end
+    end
   end
-
-  @doc """
-  Creates a `StbImage` from a Nx tensor.
-
-  The tensor is expected to have the shape `{h, w, c}`
-  and one of the supported types (u8/f32).
-  """
-  def from_nx(tensor) when is_struct(tensor, Nx.Tensor) do
-    new(Nx.to_binary(tensor), tensor_shape(Nx.shape(tensor)), type: tensor_type(Nx.type(tensor)))
-  end
-
-  defp tensor_type({:u, 8}), do: {:u, 8}
-  defp tensor_type({:f, 32}), do: {:f, 32}
-
-  defp tensor_type(type),
-    do: raise(ArgumentError, "unsupported tensor type: #{inspect(type)} (expected u8/f32)")
-
-  defp tensor_shape({_, _, c} = shape) when c in 1..4,
-    do: shape
-
-  defp tensor_shape(shape),
-    do:
-      raise(
-        ArgumentError,
-        "unsupported tensor shape: #{inspect(shape)} (expected height-width-channel)"
-      )
 
   if Code.ensure_loaded?(Kino.Render) do
     defimpl Kino.Render do

@@ -190,6 +190,13 @@ defmodule StbImageTest do
     end
   end
 
+  describe "nx" do
+    test "implements lazy container" do
+      img = StbImage.read_file!(Path.join(__DIR__, "test.png"))
+      assert StbImage.to_nx(img) == Nx.Defn.jit(& &1).(img)
+    end
+  end
+
   describe "errors" do
     test "read_file" do
       assert StbImage.read_file("unknown.jpg") == {:error, "could not open file"}

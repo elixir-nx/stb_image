@@ -18,8 +18,8 @@ defmodule StbImage.MixProject do
       make_makefile: make_makefile(),
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_precompiler: {:nif, CCPrecompiler},
-      make_precompiled_url: "#{@github_url}/releases/download/v#{@version}/@{artefact_filename}",
-      make_nif_filename: "stb_image_nif"
+      make_precompiler_url: "#{@github_url}/releases/download/v#{@version}/@{artefact_filename}",
+      make_precompiler_filename: "stb_image_nif"
     ]
   end
 
@@ -37,7 +37,8 @@ defmodule StbImage.MixProject do
   defp deps do
     [
       # compilation
-      {:cc_precompiler, "~> 0.1.0", runtime: false},
+      {:cc_precompiler, "~> 0.1.0"},
+      {:elixir_make, "~> 0.7.0"},
       # optional
       {:nx, "~> 0.4", optional: true},
       {:kino, "~> 0.7", optional: true},

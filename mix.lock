@@ -1,5 +1,5 @@
 %{
-  "cc_precompiler": {:hex, :cc_precompiler, "0.1.0", "2972597dfef4eff032d3fb7f0cc209e6f8626137d928482863ae42bf955f67cd", [:mix], [{:elixir_make, "~> 0.7.0", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "e9f129294296bcf5a15d7ed3b0bd4355d8410c750769805ec54943d5d1ee4d22"},
+  "cc_precompiler": {:hex, :cc_precompiler, "0.1.0", "03f0fc42f157b02e3cc54d11e56a87830455e43789483dd298a4a3787f876ad1", [:mix], [{:elixir_make, "~> 0.7.0", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "3c61c5ff5ecf6f30d90577d25a83ea542bbbfab29d739b9f676a34e3198167f1"},
   "complex": {:hex, :complex, "0.4.2", "923e5db0be13dbb3ea00cf8459d9f75f3afdd9ff5a82742ded21064330d28273", [:mix], [], "hexpm", "069a085ef820ce675a2619fd125b963ff4514af2102c7f7d7965128e5ec0a429"},
   "earmark_parser": {:hex, :earmark_parser, "1.4.29", "149d50dcb3a93d9f3d6f3ecf18c918fb5a2d3c001b5d3305c926cddfbd33355b", [:mix], [], "hexpm", "4902af1b3eb139016aed210888748db8070b8125c2342ce3dcae4f38dcc63503"},
   "elixir_make": {:hex, :elixir_make, "0.7.0", "03e6a43ac701a2afee73bb5dd030b4dcddcb403bf81abb4753c1da64521cd05d", [:mix], [{:castore, "~> 0.1", [hex: :castore, repo: "hexpm", optional: true]}], "hexpm", "b1ccb45cc1c5df16349473b52adbd718f362585a5481d761b8a9fdb45f25b303"},

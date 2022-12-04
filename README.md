@@ -17,6 +17,7 @@ end
 ```
 
 This library also provides some precompiled binaries for the following platforms:
+
 - macOS
   - x86_64-macos
   - aarch64-macos

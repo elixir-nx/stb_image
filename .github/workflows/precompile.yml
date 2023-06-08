@@ -10,13 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MIX_ENV: prod
+    strategy:
+      matrix:
+        otp_version: [25, 26]
 
     steps:
       - uses: actions/checkout@v3
 
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 25.1
+          otp-version: ${{ matrix.otp_version }}
           elixir-version: 1.14
 
       - name: Install system dependecies
@@ -75,13 +78,16 @@ jobs:
     runs-on: windows-latest
     env:
       MIX_ENV: prod
+    strategy:
+      matrix:
+        otp_version: [25, 26]
 
     steps:
       - uses: actions/checkout@v3
 
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 25.1
+          otp-version: ${{ matrix.otp_version }}
           elixir-version: 1.14
 
       - uses: ilammy/msvc-dev-cmd@v1

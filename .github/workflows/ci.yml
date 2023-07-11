@@ -18,6 +18,8 @@ jobs:
     strategy:
       matrix:
         otp_version: [25, 26]
+    
+    name: Linux x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
       - uses: actions/checkout@v3
@@ -39,6 +41,8 @@ jobs:
     strategy:
       matrix:
         otp_version: [25, 26]
+
+    name: Windows x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
       - uses: actions/checkout@v3
@@ -67,6 +71,8 @@ jobs:
     strategy:
       matrix:
         otp_version: ["25.3.2.3", "26.0.2"]
+
+    name: macOS x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
       - uses: actions/checkout@v3

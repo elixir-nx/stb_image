@@ -13,6 +13,8 @@ jobs:
     strategy:
       matrix:
         otp_version: [25, 26]
+    
+    name: Linux x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
       - uses: actions/checkout@v3
@@ -51,10 +53,12 @@ jobs:
     runs-on: macos-11
     env:
       MIX_ENV: prod
+      elixir_version: "1.15.2"
     strategy:
       matrix:
         otp_version: ["25.3.2.3", "26.0.2"]
-        elixir_version: "1.15.2"
+
+    name: macOS x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
       - uses: actions/checkout@v3
@@ -66,9 +70,9 @@ jobs:
           asdf plugin-add elixir https://github.com/asdf-vm/asdf-elixir.git
           export KERL_CONFIGURE_OPTIONS="--disable-debug --without-javac"
           asdf install erlang ${{ matrix.otp_version }}
-          asdf install elixir ${{ matrix.elixir_version }}
+          asdf install elixir ${{ env.elixir_version }}
           asdf global erlang ${{ matrix.otp_version }}
-          asdf global elixir ${{ matrix.elixir_version }}
+          asdf global elixir ${{ env.elixir_version }}
           source $(brew --prefix asdf)/libexec/asdf.sh
           mix local.hex --force
           mix local.rebar --force
@@ -94,6 +98,8 @@ jobs:
     strategy:
       matrix:
         otp_version: [25, 26]
+    
+    name: Windows x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
       - uses: actions/checkout@v3

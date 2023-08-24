@@ -134,7 +134,6 @@ defmodule StbImage do
         end
       end
 
-      @spec to_livebook(StbImage.t()) :: Kino.Output.t()
       def to_livebook(image) when is_struct(image, StbImage) do
         render_types = Application.fetch_env!(:stb_image, :kino_render_tab_order)
 
@@ -165,7 +164,7 @@ defmodule StbImage do
 
                 :png ->
                   {:png, :png}
-                
+
                 _ ->
                   raise "invalid :kino_render_encoding configuration. Expected one of :png, :jpg, or :jpeg. Got: #{inspect(render_encoding)}"
               end

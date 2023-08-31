@@ -1,7 +1,7 @@
 defmodule StbImage.MixProject do
   use Mix.Project
 
-  @version "0.6.2"
+  @version "0.6.3"
   @github_url "https://github.com/elixir-nx/stb_image"
 
   def project do

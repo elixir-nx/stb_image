@@ -10,7 +10,7 @@
 #define STBIW_WINDOWS_UTF8
 #include <stb_image.h>
 #include <stb_image_write.h>
-#include <stb_image_resize.h>
+#include <stb_image_resize2.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -447,9 +447,9 @@ static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
 
     if (enif_alloc_binary(output_w * output_h * num_channels * bytes_per_channel, &result)) {
         if (bytes_per_channel == 1) {
-            status = stbir_resize_uint8(input_pixels.data, input_w, input_h, stride_in_bytes, result.data, output_w, output_h, stride_in_bytes, num_channels);
+            status = stbir_resize_uint8_linear(input_pixels.data, input_w, input_h, stride_in_bytes, result.data, output_w, output_h, stride_in_bytes, (stbir_pixel_layout)num_channels);
         } else if (bytes_per_channel == 4) {
-            status = stbir_resize_float((float *)input_pixels.data, input_w, input_h, stride_in_bytes, (float *)result.data, output_w, output_h, stride_in_bytes, num_channels);
+            status = stbir_resize_float_linear((float *)input_pixels.data, input_w, input_h, stride_in_bytes, (float *)result.data, output_w, output_h, stride_in_bytes, (stbir_pixel_layout)num_channels);
         } else {
             return error(env, "invalid type");
         }

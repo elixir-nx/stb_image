@@ -67,7 +67,7 @@ jobs:
     runs-on: macos-11
     env:
       MIX_ENV: test
-      elixir_version: "1.16.0"
+      ELIXIR_VERSION: "1.16.0"
     strategy:
       matrix:
         otp_version: ["25.3.2.8", "26.2.2"]

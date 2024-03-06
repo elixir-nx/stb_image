@@ -214,4 +214,37 @@ defmodule StbImageTest do
       end
     end
   end
+
+  describe "desired channels" do
+    test "decode RGBA image as is" do
+      img = StbImage.read_file!(Path.join(__DIR__, "test-rgba.png"))
+      assert {18, 30, 4} == img.shape
+    end
+
+    test "decode RGBA image, request 3 channels" do
+      img = StbImage.read_file!(Path.join(__DIR__, "test-rgba.png"), channels: 3)
+      assert {18, 30, 3} == img.shape
+    end
+
+    test "decode RGBA image, request 2 channels" do
+      img = StbImage.read_file!(Path.join(__DIR__, "test-rgba.png"), channels: 2)
+      assert {18, 30, 2} == img.shape
+    end
+
+    test "decode RGBA image, request 1 channel" do
+      img = StbImage.read_file!(Path.join(__DIR__, "test-rgba.png"), channels: 1)
+      assert {18, 30, 1} == img.shape
+    end
+
+    test "decode RGBA image, request 0 channels" do
+      img = StbImage.read_file!(Path.join(__DIR__, "test-rgba.png"), channels: 0)
+      assert {18, 30, 4} == img.shape
+    end
+
+    test "decode RGBA image, requested channels exceeds maximum channels available in the image" do
+      assert_raise ArgumentError, "cannot decode image", fn ->
+        StbImage.read_file!(Path.join(__DIR__, "test-rgba.png"), channels: 5)
+      end
+    end
+  end
 end

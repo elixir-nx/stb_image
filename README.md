@@ -19,16 +19,17 @@ end
 This library also provides some precompiled binaries for the following platforms:
 
 - macOS
-  - x86_64-macos
-  - aarch64-macos
+  - x86_64-apple-darwin
+  - aarch64-apple-darwin
 - Linux
   - x86_64-linux-gnu
   - x86_64-linux-musl
   - aarch64-linux-gnu
   - aarch64-linux-musl
+  - riscv64-linux-gnu
   - riscv64-linux-musl
 - Windows
-  - x86_64-windows-gnu
+  - x86_64-windows-msvc
 
 ## License
 

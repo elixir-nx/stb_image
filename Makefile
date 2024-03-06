@@ -16,7 +16,7 @@ endif
 endif
 
 ifeq ($(TARGET_ABI),darwin)
-	CPPFLAGS += -undefined dynamic_lookup -flat_namespace -undefined suppress
+	CPPFLAGS += -undefined dynamic_lookup -flat_namespace
 endif
 
 .DEFAULT_GLOBAL := build

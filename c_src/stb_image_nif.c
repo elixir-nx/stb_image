@@ -54,7 +54,7 @@ static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
 
     char * c_path = NULL;
     ErlNifBinary path;
-    int desired_channels, bytes_per_channel;
+    int desired_channels = 0, bytes_per_channel;
     
     ERL_NIF_TERM ret;
 
@@ -86,6 +86,11 @@ static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         bytes_per_channel = 1;
     }
 
+    if (desired_channels > 0) {
+        if (n >= desired_channels) {
+            n = desired_channels;
+        }
+    }
     ret = pack_data(env, data, x, y, n, bytes_per_channel);
 
     fclose(f);

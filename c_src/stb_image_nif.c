@@ -48,10 +48,6 @@ static ERL_NIF_TERM pack_data(ErlNifEnv *env, unsigned char *data, int x, int y,
 }
 
 static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
-    if (argc != 2) {
-        return error(env, "expecting 2 arguments: path and desired_channels");
-    }
-
     char * c_path = NULL;
     ErlNifBinary path;
     int desired_channels = 0, bytes_per_channel;
@@ -103,10 +99,6 @@ free_c_path:
 }
 
 static ERL_NIF_TERM read_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
-    if (argc != 2) {
-        return error(env, "expecting 2 arguments: binary and desired_channels");
-    }
-
     ErlNifBinary binary;
     int desired_channels, bytes_per_channel;
     int x, y, n;
@@ -133,10 +125,6 @@ static ERL_NIF_TERM read_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM arg
 }
 
 static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
-    if (argc != 1) {
-        return error(env, "expecting 1 argument: binary");
-    }
-
     ErlNifBinary binary;
 
     if (enif_inspect_binary(env, argv[0], &binary)) {
@@ -203,10 +191,6 @@ static ERL_NIF_TERM read_gif_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM
 }
 
 static ERL_NIF_TERM write_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
-    if (argc != 6) {
-        return error(env, "expecting 6 arguments: path, format, data, height, width, and number of channels");
-    }
-
     char * c_path = NULL;
     char format[MAX_EXTNAME_LENGTH];
     ErlNifBinary path;
@@ -344,10 +328,6 @@ static void finalize_write(WriteContext *context, ErlNifEnv *env, ERL_NIF_TERM *
 }
 
 static ERL_NIF_TERM to_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
-    if (argc != 5) {
-        return error(env, "expecting 5 arguments: format, data, height, width, and number of channels");
-    }
-
     char format[MAX_EXTNAME_LENGTH];
     ErlNifBinary img;
     int w, h, comp;
@@ -417,10 +397,6 @@ static ERL_NIF_TERM to_binary(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
 }
 
 static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
-    if (argc != 7) {
-        return error(env, "expecting 7 arguments: input pixels, input height, input width, number of channels, output height, output width, and bytes per channel");
-    }
-
     ErlNifBinary input_pixels;
     int input_h, input_w, output_h, output_w, num_channels, bytes_per_channel;
     int stride_in_bytes = 0;

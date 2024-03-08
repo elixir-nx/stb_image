@@ -423,7 +423,7 @@ static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
         return error(env, "invalid bytes per channel");
     }
 
-    int status;
+    void * status;
     ErlNifBinary result;
 
     if (enif_alloc_binary(output_w * output_h * num_channels * bytes_per_channel, &result)) {
@@ -435,7 +435,7 @@ static ERL_NIF_TERM resize(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]){
             return error(env, "invalid type");
         }
 
-        if (!status) {
+        if (status == NULL) {
             return error(env, "failed to resize");
         }
 

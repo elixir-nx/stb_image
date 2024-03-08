@@ -14,8 +14,6 @@ defmodule StbImage.MixProject do
       description: "A tiny image reader/writer library using stb_image as the backend",
       docs: docs(),
       package: package(),
-      make_executable: make_executable(),
-      make_makefile: make_makefile(),
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_precompiler: {:nif, CCPrecompiler},
       make_precompiler_url: "#{@github_url}/releases/download/v#{@version}/@{artefact_filename}",
@@ -63,19 +61,5 @@ defmodule StbImage.MixProject do
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @github_url}
     ]
-  end
-
-  defp make_executable() do
-    case :os.type() do
-      {:win32, _} -> "nmake"
-      _ -> "make"
-    end
-  end
-
-  defp make_makefile() do
-    case :os.type() do
-      {:win32, _} -> "Makefile.win"
-      _ -> "Makefile"
-    end
   end
 end

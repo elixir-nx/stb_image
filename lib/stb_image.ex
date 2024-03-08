@@ -90,7 +90,9 @@ defmodule StbImage do
     and one of the supported types (u8/f32).
     """
     def from_nx(tensor) when is_struct(tensor, Nx.Tensor) do
-      new(Nx.to_binary(tensor), tensor_shape(Nx.shape(tensor)), type: tensor_type(Nx.type(tensor)))
+      new(Nx.to_binary(tensor), tensor_shape(Nx.shape(tensor)),
+        type: tensor_type(Nx.type(tensor))
+      )
     end
 
     defp tensor_type({:u, 8}), do: {:u, 8}

@@ -1,12 +1,14 @@
 defmodule StbImage.MixProject do
   use Mix.Project
 
+  @app :stb_image
   @version "0.6.6"
+  @minimum_nif_version "2.14"
   @github_url "https://github.com/elixir-nx/stb_image"
 
   def project do
     [
-      app: :stb_image,
+      app: @app,
       version: @version,
       elixir: "~> 1.12",
       deps: deps(),
@@ -18,7 +20,10 @@ defmodule StbImage.MixProject do
       make_precompiler: {:nif, CCPrecompiler},
       make_precompiler_url: "#{@github_url}/releases/download/v#{@version}/@{artefact_filename}",
       make_precompiler_filename: "stb_image_nif",
-      make_precompiler_nif_versions: [versions: ["2.16", "2.17"]]
+      make_precompiler_nif_versions: [
+        use_minimum_version: true,
+        minimum_version: @minimum_nif_version
+      ]
     ]
   end
 
@@ -54,10 +59,11 @@ defmodule StbImage.MixProject do
     ]
   end
 
-  defp package() do
+  defp package do
     [
       name: "stb_image",
-      files: ~w(3rd_party/stb c_src lib mix.exs README* LICENSE* Makefile checksum.exs),
+      files:
+        ~w(3rd_party/stb c_src lib mix.exs README* LICENSE* Makefile Makefile.win checksum.exs),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @github_url}
     ]

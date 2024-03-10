@@ -85,7 +85,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./cache/elixir
-          key: ${{ runner.os }}-elixir-${{ env.ELIXIR_VERSION }}
+          key: ${{ runner.os }}-elixir-${{ env.ELIXIR_VERSION }}-${{ matrix.otp_version }}
 
       - name: Download and Compile Elixir
         if: steps.cache-elixir.outputs.cache-hit != 'true'
@@ -139,7 +139,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.11
+          elixir-version: 1.13
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:

@@ -12,7 +12,7 @@ jobs:
       MIX_ENV: prod
     strategy:
       matrix:
-        otp_version: [23]
+        otp_version: [24]
 
     name: Linux x86_64 - OTP ${{ matrix.otp_version }}
 
@@ -128,7 +128,7 @@ jobs:
       MIX_ENV: prod
     strategy:
       matrix:
-        otp_version: [23]
+        otp_version: [24]
 
     name: Windows x86_64 - OTP ${{ matrix.otp_version }}
 

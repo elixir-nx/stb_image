@@ -9,7 +9,7 @@ defmodule StbImage.MixProject do
     [
       app: @app,
       version: @version,
-      elixir: "~> 1.11",
+      elixir: "~> 1.12",
       deps: deps(),
       name: "StbImage",
       description: "A tiny image reader/writer library using stb_image as the backend",
@@ -19,15 +19,7 @@ defmodule StbImage.MixProject do
       make_precompiler: {:nif, CCPrecompiler},
       make_precompiler_url: "#{@github_url}/releases/download/v#{@version}/@{artefact_filename}",
       make_precompiler_filename: "stb_image_nif",
-      make_precompiler_nif_versions: [
-        versions: fn opts ->
-          if String.contains?(opts.target, "darwin") do
-            ["2.16"]
-          else
-            ["2.15"]
-          end
-        end
-      ]
+      make_precompiler_nif_versions: [versions: ["2.16"]]
     ]
   end
 

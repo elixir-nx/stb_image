@@ -12,7 +12,7 @@ jobs:
       MIX_ENV: prod
     strategy:
       matrix:
-        otp_version: [21]
+        otp_version: [23]
 
     name: Linux x86_64 - OTP ${{ matrix.otp_version }}
 
@@ -57,7 +57,7 @@ jobs:
       ELIXIR_VERSION: "1.16.0"
     strategy:
       matrix:
-        otp_version: ["25.3.2.8"]
+        otp_version: ["24.3.4.16"]
 
     name: macOS x86_64 - OTP ${{ matrix.otp_version }}
 
@@ -128,7 +128,7 @@ jobs:
       MIX_ENV: prod
     strategy:
       matrix:
-        otp_version: [21]
+        otp_version: [23]
 
     name: Windows x86_64 - OTP ${{ matrix.otp_version }}
 

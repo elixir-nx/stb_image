@@ -3,7 +3,6 @@ defmodule StbImage.MixProject do
 
   @app :stb_image
   @version "0.6.6"
-  @minimum_nif_version "2.14"
   @github_url "https://github.com/elixir-nx/stb_image"
 
   def project do
@@ -22,11 +21,10 @@ defmodule StbImage.MixProject do
       make_precompiler_filename: "stb_image_nif",
       make_precompiler_nif_versions: [
         versions: fn opts ->
-          target = opts.target
-          if String.contains?(target, "darwin") do
-            ["2.15"]
+          if String.contains?(opts.target, "darwin") do
+            ["2.16"]
           else
-            ["2.14"]
+            ["2.15"]
           end
         end
       ]

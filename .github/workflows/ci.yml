@@ -19,12 +19,14 @@ jobs:
       matrix:
         job:
           - { otp_version: "26", elixir_version: "1.15" }
-          - { otp_version: "21", elixir_version: "1.11" }
+          - { otp_version: "23", elixir_version: "1.12" }
     
     name: Linux x86_64 - OTP ${{ matrix.job.otp_version }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.job.otp_version }}
@@ -44,7 +46,7 @@ jobs:
       matrix:
         job:
           - { otp_version: "26", elixir_version: "1.15" }
-          - { otp_version: "21", elixir_version: "1.11" }
+          - { otp_version: "23", elixir_version: "1.12" }
 
     name: Windows x86_64 - OTP ${{ matrix.job.otp_version }}
 

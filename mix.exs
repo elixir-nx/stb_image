@@ -10,7 +10,7 @@ defmodule StbImage.MixProject do
     [
       app: @app,
       version: @version,
-      elixir: "~> 1.12",
+      elixir: "~> 1.11",
       deps: deps(),
       name: "StbImage",
       description: "A tiny image reader/writer library using stb_image as the backend",

@@ -23,7 +23,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.12
+          elixir-version: 1.11
 
       - name: Install system dependecies
         run: |
@@ -139,7 +139,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.12
+          elixir-version: 1.11
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:

@@ -38,7 +38,7 @@ defmodule StbImage.MixProject do
     [
       # compilation
       {:cc_precompiler, "~> 0.1.0"},
-      {:elixir_make, "~> 0.7.0"},
+      {:elixir_make, "~> 0.8.0"},
       # optional
       {:nx, "~> 0.4", optional: true},
       {:kino, "~> 0.7", optional: true},

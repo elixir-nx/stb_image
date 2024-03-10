@@ -67,7 +67,7 @@ jobs:
     runs-on: macos-11
     env:
       MIX_ENV: test
-      ELIXIR_VERSION: "1.16.0"
+      ELIXIR_VERSION: "1.16.2"
     strategy:
       matrix:
         otp_version: ["25.3.2.8", "26.2.2"]
@@ -75,7 +75,8 @@ jobs:
     name: macOS x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Cache OTP
         uses: actions/cache@v3
@@ -109,6 +110,7 @@ jobs:
           cd ./cache/elixir
           tar -xzf elixir-${{ env.ELIXIR_VERSION }}.tar.gz
           cd elixir-${{ env.ELIXIR_VERSION }}
+          make compile
           make -j$(sysctl -n hw.ncpu) install
 
       - name: Install Mix and Rebar

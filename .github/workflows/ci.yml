@@ -17,16 +17,18 @@ jobs:
       MIX_ENV: test
     strategy:
       matrix:
-        otp_version: [25, 26]
+        job:
+          - { otp_version: "26", elixir_version: "1.15" }
+          - { otp_version: "21", elixir_version: "1.12" }
     
-    name: Linux x86_64 - OTP ${{ matrix.otp_version }}
+    name: Linux x86_64 - OTP ${{ matrix.job.otp_version }}
 
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.15
+          otp-version: ${{ matrix.job.otp_version }}
+          elixir-version: ${{ matrix.job.elixir_version }}
 
       - name: Compile and Test
         run: |
@@ -40,17 +42,20 @@ jobs:
       MIX_ENV: test
     strategy:
       matrix:
-        otp_version: [25, 26]
+        job:
+          - { otp_version: "26", elixir_version: "1.15" }
+          - { otp_version: "21", elixir_version: "1.12" }
 
-    name: Windows x86_64 - OTP ${{ matrix.otp_version }}
+    name: Windows x86_64 - OTP ${{ matrix.job.otp_version }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.15
+          otp-version: ${{ matrix.job.otp_version }}
+          elixir-version: ${{ matrix.job.elixir_version }}
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:

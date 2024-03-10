@@ -7,12 +7,12 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       MIX_ENV: prod
     strategy:
       matrix:
-        otp_version: [26]
+        otp_version: [21]
 
     name: Linux x86_64 - OTP ${{ matrix.otp_version }}
 
@@ -23,7 +23,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.15
+          elixir-version: 1.12
 
       - name: Install system dependecies
         run: |
@@ -57,7 +57,7 @@ jobs:
       ELIXIR_VERSION: "1.16.0"
     strategy:
       matrix:
-        otp_version: ["26.2.2"]
+        otp_version: ["25.3.2.8"]
 
     name: macOS x86_64 - OTP ${{ matrix.otp_version }}
 
@@ -128,7 +128,7 @@ jobs:
       MIX_ENV: prod
     strategy:
       matrix:
-        otp_version: [26]
+        otp_version: [21]
 
     name: Windows x86_64 - OTP ${{ matrix.otp_version }}
 
@@ -139,7 +139,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.15
+          elixir-version: 1.12
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:

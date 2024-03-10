@@ -20,7 +20,16 @@ defmodule StbImage.MixProject do
       make_precompiler: {:nif, CCPrecompiler},
       make_precompiler_url: "#{@github_url}/releases/download/v#{@version}/@{artefact_filename}",
       make_precompiler_filename: "stb_image_nif",
-      make_precompiler_nif_versions: [versions: [@minimum_nif_version]]
+      make_precompiler_nif_versions: [
+        versions: fn opts ->
+          target = opts.target
+          if String.contains?(target, "darwin") do
+            ["2.15"]
+          else
+            ["2.14"]
+          end
+        end
+      ]
     ]
   end
 

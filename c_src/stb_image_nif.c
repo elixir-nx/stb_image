@@ -10,6 +10,8 @@
 #define STBIW_WINDOWS_UTF8
 #include <stb_image.h>
 #include <stb_image_write.h>
+#define STBIR_MALLOC(size,user_data) ((void)(user_data), enif_alloc(size))
+#define STBIR_FREE(ptr,user_data) ((void)(user_data), enif_free(ptr))
 #include <stb_image_resize2.h>
 #include <stdbool.h>
 #include <stdio.h>

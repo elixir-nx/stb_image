@@ -7,22 +7,23 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       MIX_ENV: prod
     strategy:
       matrix:
-        otp_version: [25, 26]
-    
+        otp_version: [24]
+
     name: Linux x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.15
+          elixir-version: 1.13
 
       - name: Install system dependecies
         run: |
@@ -56,12 +57,13 @@ jobs:
       ELIXIR_VERSION: "1.16.0"
     strategy:
       matrix:
-        otp_version: ["25.3.2.8", "26.2.2"]
+        otp_version: ["24.3.4.16"]
 
     name: macOS x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Cache OTP
         uses: actions/cache@v3
@@ -84,7 +86,7 @@ jobs:
         with:
           path: ./cache/elixir
           key: ${{ runner.os }}-elixir-${{ env.ELIXIR_VERSION }}
-  
+
       - name: Download and Compile Elixir
         if: steps.cache-elixir.outputs.cache-hit != 'true'
         run: |
@@ -126,17 +128,18 @@ jobs:
       MIX_ENV: prod
     strategy:
       matrix:
-        otp_version: [25, 26]
-    
+        otp_version: [24]
+
     name: Windows x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.15
+          elixir-version: 1.11
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:

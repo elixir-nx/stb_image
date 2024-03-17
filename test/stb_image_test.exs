@@ -261,4 +261,21 @@ defmodule StbImageTest do
       end
     end
   end
+
+  describe "bad files" do
+    test "JPEG with bad maker" do
+      file = Path.join(__DIR__, "stb-issue-1608.jpg")
+      binary = File.read!(file)
+
+      assert StbImage.read_file(file) == {:error, "cannot decode image"}
+      assert StbImage.read_binary(binary) == {:error, "cannot decode image"}
+
+      assert_raise ArgumentError, "cannot decode image", fn ->
+        StbImage.read_file!(file)
+      end
+      assert_raise ArgumentError, "cannot decode image", fn ->
+        StbImage.read_binary!(binary)
+      end
+    end
+  end
 end

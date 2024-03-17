@@ -273,6 +273,7 @@ defmodule StbImageTest do
       assert_raise ArgumentError, "cannot decode image", fn ->
         StbImage.read_file!(file)
       end
+
       assert_raise ArgumentError, "cannot decode image", fn ->
         StbImage.read_binary!(binary)
       end

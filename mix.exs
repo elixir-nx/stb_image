@@ -2,7 +2,7 @@ defmodule StbImage.MixProject do
   use Mix.Project
 
   @app :stb_image
-  @version "0.6.9-dev"
+  @version "0.6.9"
   @github_url "https://github.com/elixir-nx/stb_image"
 
   def project do
@@ -37,8 +37,8 @@ defmodule StbImage.MixProject do
   defp deps do
     [
       # compilation
-      {:cc_precompiler, "~> 0.1.0"},
-      {:elixir_make, "~> 0.8.3"},
+      {:cc_precompiler, "~> 0.1"},
+      {:elixir_make, "~> 0.8"},
       # optional
       {:nx, "~> 0.4", optional: true},
       {:kino, "~> 0.7", optional: true},

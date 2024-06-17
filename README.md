@@ -1,5 +1,7 @@
 # StbImage
 
+[![Hex.pm](https://img.shields.io/hexpm/v/stb_image.svg?style=flat&color=blue)](https://hex.pm/packages/stb_image)
+
 A tiny image reader/writer library using [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) as the backend. [See the documentation](https://hexdocs.pm/stb_image).
 
 There is an alternative library, [image_rs](https://github.com/cocoa-xu/image_rs), which uses [image_rs](https://github.com/image-rs/image) as the backend. That backend is implemented in Rust, so you will need a working Rust compiler. But the number of supported image formats is greater than `stb_image`.

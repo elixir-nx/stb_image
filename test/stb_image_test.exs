@@ -297,5 +297,11 @@ defmodule StbImageTest do
 
       assert decoded == expected
     end
+
+    test "CVE-2021-45340" do
+      assert_raise ArgumentError, "cannot decode image", fn ->
+        StbImage.read_file!(Path.join(__DIR__, "stb-issue-cve-2021-45340.gif"))
+      end
+    end
   end
 end

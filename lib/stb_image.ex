@@ -113,7 +113,8 @@ defmodule StbImage do
 
     defimpl Nx.LazyContainer do
       def traverse(%StbImage{type: type, shape: shape} = stb_image, acc, fun) do
-        fun.(Nx.template(shape, type), fn -> StbImage.to_nx(stb_image) end, acc)
+        template = Nx.template(shape, type, names: [:height, :width, :channels])
+        fun.(template, fn -> StbImage.to_nx(stb_image) end, acc)
       end
     end
   end

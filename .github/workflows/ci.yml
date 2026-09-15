@@ -12,28 +12,42 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container: ubuntu:20.04
     env:
       MIX_ENV: test
+      DEBIAN_FRONTEND: noninteractive
+      ELIXIR_VERSION: "1.17.3"
+      OTP_VERSION: ${{ matrix.otp_version }}
     strategy:
       matrix:
-        job:
-          - { otp_version: "26", elixir_version: "1.15" }
-          - { otp_version: "24", elixir_version: "1.13" }
+        otp_version: ["27.3.4.10", "25.3.2.21"]
 
-    name: Linux x86_64 - OTP ${{ matrix.job.otp_version }}
+    name: Linux x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y build-essential ca-certificates curl git unzip
+
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: erlef/setup-beam@v1
-        with:
-          otp-version: ${{ matrix.job.otp_version }}
-          elixir-version: ${{ matrix.job.elixir_version }}
+      - name: Install OTP and Elixir
+        run: |
+          curl -fsSO https://elixir-lang.org/install.sh
+          sh install.sh "elixir@${ELIXIR_VERSION}" "otp@${OTP_VERSION}"
 
       - name: Compile and Test
         run: |
+          export OTP_MAIN_VER="${OTP_VERSION%%.*}"
+          export PATH=$HOME/.elixir-install/installs/otp/${OTP_VERSION}/bin:$PATH
+          export PATH=$HOME/.elixir-install/installs/elixir/${ELIXIR_VERSION}-otp-${OTP_MAIN_VER}/bin:$PATH
+
+          mix local.hex --force
+          mix local.rebar --force
+
           mix deps.get
           mix elixir_make.precompile
           mix test
@@ -45,8 +59,8 @@ jobs:
     strategy:
       matrix:
         job:
-          - { otp_version: "26", elixir_version: "1.15" }
-          - { otp_version: "24", elixir_version: "1.13" }
+          - { otp_version: "27", elixir_version: "1.17" }
+          - { otp_version: "25", elixir_version: "1.17" }
 
     name: Windows x86_64 - OTP ${{ matrix.job.otp_version }}
 
@@ -71,7 +85,7 @@ jobs:
           mix test
 
   macos:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     env:
       MIX_ENV: test
       ELIXIR_VERSION: "1.16.2"

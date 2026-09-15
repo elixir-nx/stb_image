@@ -72,7 +72,7 @@ jobs:
       OTP_VERSION: ${{ matrix.otp_version}}
     strategy:
       matrix:
-        otp_version: ["24.3.4.16"]
+        otp_version: ["25.3.2.14"]
 
     name: macOS x86_64 - OTP ${{ matrix.otp_version }}
 

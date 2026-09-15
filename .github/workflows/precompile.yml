@@ -57,7 +57,7 @@ jobs:
           mix deps.get
           mix elixir_make.precompile
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
@@ -100,7 +100,7 @@ jobs:
           mix deps.get
           mix elixir_make.precompile
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
@@ -138,7 +138,7 @@ jobs:
           mix deps.get
           mix elixir_make.precompile
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |

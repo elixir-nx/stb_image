@@ -35,7 +35,7 @@ jobs:
             gcc-s390x-linux-gnu g++-s390x-linux-gnu
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install OTP and Elixir
         run: |
@@ -78,7 +78,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install OTP and Elixir
         run: |
@@ -119,7 +119,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - uses: erlef/setup-beam@v1
         with:

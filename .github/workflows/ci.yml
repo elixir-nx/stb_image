@@ -18,8 +18,8 @@ jobs:
     strategy:
       matrix:
         job:
-          - { otp_version: "26", elixir_version: "1.15" }
-          - { otp_version: "24", elixir_version: "1.13" }
+          - { otp_version: "27", elixir_version: "1.17" }
+          - { otp_version: "25", elixir_version: "1.17" }
 
     name: Linux x86_64 - OTP ${{ matrix.job.otp_version }}
 
@@ -45,8 +45,8 @@ jobs:
     strategy:
       matrix:
         job:
-          - { otp_version: "26", elixir_version: "1.15" }
-          - { otp_version: "24", elixir_version: "1.13" }
+          - { otp_version: "27", elixir_version: "1.17" }
+          - { otp_version: "25", elixir_version: "1.17" }
 
     name: Windows x86_64 - OTP ${{ matrix.job.otp_version }}
 

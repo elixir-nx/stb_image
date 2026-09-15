@@ -12,7 +12,7 @@ jobs:
       MIX_ENV: prod
     strategy:
       matrix:
-        otp_version: [24]
+        otp_version: [25]
 
     name: Linux x86_64 - OTP ${{ matrix.otp_version }}
 
@@ -23,7 +23,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.13
+          elixir-version: 1.17
 
       - name: Install system dependecies
         run: |
@@ -100,7 +100,7 @@ jobs:
       MIX_ENV: prod
     strategy:
       matrix:
-        otp_version: [24]
+        otp_version: [25]
 
     name: Windows x86_64 - OTP ${{ matrix.otp_version }}
 
@@ -111,7 +111,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.13
+          elixir-version: 1.17
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:

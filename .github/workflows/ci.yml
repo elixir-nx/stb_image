@@ -12,9 +12,11 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container: ubuntu:20.04
     env:
       MIX_ENV: test
+      DEBIAN_FRONTEND: noninteractive
     strategy:
       matrix:
         job:
@@ -24,6 +26,11 @@ jobs:
     name: Linux x86_64 - OTP ${{ matrix.job.otp_version }}
 
     steps:
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y build-essential ca-certificates curl git unzip
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -71,7 +78,7 @@ jobs:
           mix test
 
   macos:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     env:
       MIX_ENV: test
       ELIXIR_VERSION: "1.16.2"

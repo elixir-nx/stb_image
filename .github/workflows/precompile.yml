@@ -7,28 +7,25 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container: ubuntu:20.04
     env:
       MIX_ENV: prod
+      DEBIAN_FRONTEND: noninteractive
+      ELIXIR_VERSION: "1.17.3"
+      OTP_VERSION: ${{ matrix.otp_version }}
     strategy:
       matrix:
-        otp_version: [25]
+        otp_version: ["25.3.2.21"]
 
     name: Linux x86_64 - OTP ${{ matrix.otp_version }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - uses: erlef/setup-beam@v1
-        with:
-          otp-version: ${{ matrix.otp_version }}
-          elixir-version: 1.17
-
       - name: Install system dependecies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential automake autoconf pkg-config bc m4 unzip zip \
+          apt-get update
+          apt-get install -y build-essential automake autoconf pkg-config bc m4 unzip zip \
+            ca-certificates curl git \
             gcc g++ \
             gcc-i686-linux-gnu g++-i686-linux-gnu \
             gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
@@ -37,10 +34,26 @@ jobs:
             gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu \
             gcc-s390x-linux-gnu g++-s390x-linux-gnu
 
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install OTP and Elixir
+        run: |
+          curl -fsSO https://elixir-lang.org/install.sh
+          sh install.sh "elixir@${ELIXIR_VERSION}" "otp@${OTP_VERSION}"
+
       - name: Precompile
         run: |
+          export OTP_MAIN_VER="${OTP_VERSION%%.*}"
+          export PATH=$HOME/.elixir-install/installs/otp/${OTP_VERSION}/bin:$PATH
+          export PATH=$HOME/.elixir-install/installs/elixir/${ELIXIR_VERSION}-otp-${OTP_MAIN_VER}/bin:$PATH
+
           export ELIXIR_MAKE_CACHE_DIR=$(pwd)/cache
           mkdir -p "${ELIXIR_MAKE_CACHE_DIR}"
+
+          mix local.hex --force
+          mix local.rebar --force
+
           mix deps.get
           mix elixir_make.precompile
 
@@ -52,7 +65,7 @@ jobs:
             cache/*.sha256
 
   macos:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     env:
       MIX_ENV: prod
       ELIXIR_VERSION: "1.16.0"

@@ -40,7 +40,7 @@ defmodule StbImage.MixProject do
       {:cc_precompiler, "~> 0.1"},
       {:elixir_make, "~> 0.8"},
       # optional
-      {:nx, "~> 0.4", optional: true},
+      {:nx, "~> 0.4 or ~> 1.0", optional: true},
       {:kino, "~> 0.7", optional: true},
       # docs
       {:ex_doc, "~> 0.29", only: :docs, runtime: false}

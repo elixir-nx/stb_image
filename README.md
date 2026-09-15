@@ -13,7 +13,7 @@ Add `stb_image` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:stb_image, "~> 0.6"}
+    {:stb_image, "~> 1.0"}
   ]
 end
 ```

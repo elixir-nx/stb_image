@@ -2,7 +2,7 @@ defmodule StbImage.MixProject do
   use Mix.Project
 
   @app :stb_image
-  @version "1.0.0"
+  @version "1.0.1-dev"
   @github_url "https://github.com/elixir-nx/stb_image"
 
   def project do
@@ -16,6 +16,7 @@ defmodule StbImage.MixProject do
       docs: docs(),
       package: package(),
       compilers: [:elixir_make] ++ Mix.compilers(),
+      make_force_build: Mix.env() == :test,
       make_precompiler: {:nif, CCPrecompiler},
       make_precompiler_url: "#{@github_url}/releases/download/v#{@version}/@{artefact_filename}",
       make_precompiler_filename: "stb_image_nif",

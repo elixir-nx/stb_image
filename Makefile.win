@@ -9,7 +9,7 @@ CPPFLAGS = /O2 /EHsc /I"$(ERTS_INCLUDE_DIR)" /I"$(STB_INCLUDE_DIR)"
 
 build: $(STB_IMAGE_NIF_SO)
 
-$(STB_IMAGE_NIF_SO):
+$(STB_IMAGE_NIF_SO): $(C_SRC)/stb_image_nif.c $(C_SRC)/nif_utils.h $(STB_INCLUDE_DIR)/stb_image.h $(STB_INCLUDE_DIR)/stb_image_write.h $(STB_INCLUDE_DIR)/stb_image_resize2.h
 	@ if not exist "$(PRIV_DIR)" mkdir "$(PRIV_DIR)"
 	$(CC) $(CPPFLAGS) /LD /MD /Fe$@ $(C_SRC)/stb_image_nif.c 
 

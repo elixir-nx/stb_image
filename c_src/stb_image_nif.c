@@ -15,6 +15,7 @@
 #include <stb_image_resize2.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #define MAX_EXTNAME_LENGTH 4
 
@@ -56,7 +57,8 @@ static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     
     ERL_NIF_TERM ret;
 
-    if (!enif_inspect_binary(env, argv[0], &path)) {
+    if (!enif_inspect_binary(env, argv[0], &path) || path.size == SIZE_MAX ||
+        (path.size > 0 && memchr(path.data, '\0', path.size) != NULL)) {
         return error(env, "invalid path");
     }
     if(!enif_get_int(env, argv[1], &desired_channels)) {
@@ -64,6 +66,7 @@ static ERL_NIF_TERM read_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     }
 
     c_path = enif_alloc(path.size + 1);
+    if (c_path == NULL) return error(env, "out of memory");
     memcpy(c_path, path.data, path.size);
     c_path[path.size] = '\0';
 
@@ -199,7 +202,8 @@ static ERL_NIF_TERM write_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv
     ErlNifBinary result;
     int w, h, comp;
 
-    if (!enif_inspect_binary(env, argv[0], &path)) {
+    if (!enif_inspect_binary(env, argv[0], &path) || path.size == SIZE_MAX ||
+        (path.size > 0 && memchr(path.data, '\0', path.size) != NULL)) {
         return error(env, "invalid path");
     }
     if (!enif_get_atom(env, argv[1], format, sizeof(format), ERL_NIF_LATIN1)) {
@@ -219,6 +223,7 @@ static ERL_NIF_TERM write_file(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv
     }
 
     c_path = enif_alloc(path.size + 1);
+    if (c_path == NULL) return error(env, "out of memory");
     memcpy(c_path, path.data, path.size);
     c_path[path.size] = '\0';
 

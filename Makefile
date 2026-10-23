@@ -24,6 +24,6 @@ endif
 build: $(STB_IMAGE_NIF_SO)
 	@ echo > /dev/null
 
-$(STB_IMAGE_NIF_SO):
+$(STB_IMAGE_NIF_SO): $(C_SRC)/stb_image_nif.c $(C_SRC)/nif_utils.h $(wildcard $(STB_INCLUDE_DIR)/*.h)
 	@ mkdir -p $(PRIV_DIR)
 	$(CC) $(CPPFLAGS) $(C_SRC)/stb_image_nif.c -o $(STB_IMAGE_NIF_SO)
